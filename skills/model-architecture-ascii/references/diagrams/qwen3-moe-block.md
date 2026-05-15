@@ -19,14 +19,14 @@ source_basis:
 ```mermaid
 flowchart TD
     in([input tokens])
-    in --> embed["Embed · V → hidden"]
+    in --> embed["Embed : V → hidden"]
 
     subgraph block ["Block × n_layers"]
         direction TB
         n1[RMSNorm]
-        attn["GQA Attn<br/>n_q_heads · n_kv_heads"]
+        attn[GQA Attn]
         n2[RMSNorm]
-        moe["MoE FFN<br/>top-k routed · no shared expert"]
+        moe["MoE FFN<br/><i>no shared expert</i>"]
         n1 --> attn
         attn -->|+ residual| n2
         n2 --> moe
@@ -34,7 +34,7 @@ flowchart TD
 
     embed --> n1
     moe -->|+ residual| fnorm[RMSNorm]
-    fnorm --> head["LMHead · hidden → V"]
+    fnorm --> head["LMHead : hidden → V"]
     head --> logits([logits])
 ```
 

@@ -19,10 +19,42 @@ Conventions for diagrams stored in `references/diagrams/*.md`. Applies to all ne
 |---|---|---|
 | Input / output tensor | rounded capsule | `id([label])` |
 | Module / op / projection | rectangle | `id[label]` |
-| Wide-but-named module (MLA Attn, MoE FFN, GQA Attn) | rectangle with `<br/>` for secondary detail | `id["MLA Attn<br/>q_lora=1536, kv_lora=512"]` — keep secondary detail short, push numbers into the Notes table when in doubt |
-| Join / concat | parenthesised or double-circle | `id((·))` or `id([concat per-head])` |
+| Join / concat | parenthesised capsule | `id([concat per-head])` |
 
 Avoid stadium / hexagon / trapezoid shapes — too many shapes hurts uniformity across the skill.
+
+## Node label content (hard rules)
+
+These rules keep module names and annotations visually distinct, and keep numerical params in a single source of truth.
+
+**Module nodes** (modules / ops / projections in the data flow):
+
+- **Name only.** No numerical parameters in the label. Example: `attn[MLA Attn]`, `moe[MoE FFN]`, `n1[RMSNorm]`.
+- All numerical params (`n_heads`, `q_lora_rank`, `n_routed_experts`, ...) go into the `## Key parameters` table, not into node labels.
+- **Allowed exception — distinguishing-feature italic line.** When a module has a feature that differs from a same-named module in another well-known model (e.g. Qwen3 MoE has no shared expert vs DeepSeek MoE has 1), you may add a single italic line via HTML:
+
+  ```
+  moe["MoE FFN<br/><i>no shared expert</i>"]
+  ```
+
+  Use this only for *distinguishing* facts, not for parameter values. One italic line max per node.
+
+**Tensor / data-flow nodes** (latent tensors named in the forward pass, e.g. `c_Q`, `q_nope`, intermediate activations):
+
+- Format `name : shape` with `:` as separator (do not use `·` or `dim`).
+- Examples:
+  - `cQ["c_Q : 1536"]`
+  - `q_nope["q_nope : 128h × 128"]`
+  - `embed["Embed : V → 7168"]` (here shape arrow encodes the projection)
+- Shape is part of the data-flow story, so it earns its place inside the label.
+
+**Cross-cutting facts** (things true about the model but not localized to one node — "layers 1–3 use dense FFN", "KV cache stores c_KV+k_rope", "first 4 layers don't apply RoPE"):
+
+- Always go into `## Notes`, never into node labels.
+
+**Edge labels** (text on an arrow):
+
+- Reserved for short structural annotations on the flow itself: `-->|+ residual|`, `-->|shared|`, `-->|top-8|`. Don't use edge labels for module parameters.
 
 ## Edges
 

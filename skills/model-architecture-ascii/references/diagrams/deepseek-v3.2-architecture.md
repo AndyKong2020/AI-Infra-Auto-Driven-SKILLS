@@ -20,7 +20,7 @@ source_basis:
 ```mermaid
 flowchart TD
     in([input tokens])
-    in --> embed["Embed · V → 7168"]
+    in --> embed["Embed : V → 7168"]
 
     subgraph block ["Block × 61"]
         direction TB
@@ -35,7 +35,7 @@ flowchart TD
 
     embed --> n1
     moe -->|+ residual| fnorm[RMSNorm]
-    fnorm --> head["LMHead · 7168 → V"]
+    fnorm --> head["LMHead : 7168 → V"]
     head --> logits([logits])
 ```
 

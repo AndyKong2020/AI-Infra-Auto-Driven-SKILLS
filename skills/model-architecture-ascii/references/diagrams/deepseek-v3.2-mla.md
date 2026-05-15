@@ -24,25 +24,25 @@ flowchart TD
     x --> WDKV[W_DKV]
     x --> WKR["W_KR (k_rope proj)"]
 
-    WDQ --> cQ["c_Q · dim 1536"]
-    WDKV --> cKV["c_KV · dim 512"]
-    WKR --> kr_pre["k_rope pre-RoPE · dim 64 (shared)"]
+    WDQ --> cQ["c_Q : 1536"]
+    WDKV --> cKV["c_KV : 512"]
+    WKR --> kr_pre["k_rope_pre : 64 (shared)"]
 
     cQ --> WUQ_NoPE[W_UQ_NoPE]
     cQ --> WUQ_RoPE[W_UQ_RoPE]
     cKV --> WUK[W_UK]
     cKV --> WUV[W_UV]
 
-    WUQ_NoPE --> q_nope["q_nope · 128h × 128"]
-    WUQ_RoPE --> q_rope_pre["q_rope pre-RoPE · 128h × 64"]
-    WUK --> k_nope["k_nope · 128h × 128"]
-    WUV --> v["v · 128h × 128"]
+    WUQ_NoPE --> q_nope["q_nope : 128h × 128"]
+    WUQ_RoPE --> q_rope_pre["q_rope_pre : 128h × 64"]
+    WUK --> k_nope["k_nope : 128h × 128"]
+    WUV --> v["v : 128h × 128"]
 
     q_rope_pre --> RoPE_q[RoPE]
     kr_pre --> RoPE_k[RoPE]
 
-    RoPE_q --> q_rope["q_rope"]
-    RoPE_k --> k_rope["k_rope · shared"]
+    RoPE_q --> q_rope["q_rope : 128h × 64"]
+    RoPE_k --> k_rope["k_rope : 64 (shared)"]
 
     q_nope --> q_concat([concat per-head])
     q_rope --> q_concat
