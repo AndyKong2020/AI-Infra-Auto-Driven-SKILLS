@@ -8,6 +8,7 @@ aliases:
   - qwen3-235b-a22b
   - qwen3-30b-a3b
 rank: 1
+family_type: moe-llm
 source_basis:
   image: model-architecture-diagram :: qwen3-moe (self-llm models/Qwen3/images/01-02.png)
   config: Qwen/Qwen3-235B-A22B/config.json
@@ -15,6 +16,18 @@ source_basis:
 ---
 
 # Qwen3 MoE block
+
+## Model summary
+
+Values shown are for **Qwen3-235B-A22B**; smaller Qwen3 MoE variants share this `family_type` and topology with different scalar values.
+
+| Field          | Value                |
+|----------------|----------------------|
+| family_type    | moe-llm              |
+| total_params   | 235B                 |
+| active_params  | 22B (top-8 of 128)   |
+| context_length | 128K                 |
+| precision      | bf16 (stock)         |
 
 ```mermaid
 flowchart TD
@@ -37,6 +50,20 @@ flowchart TD
     fnorm --> head["LMHead : hidden → V"]
     head --> logits([logits])
 ```
+
+## Modules (in forward order)
+
+Counts shown are for **Qwen3-235B-A22B**; for the smaller `Qwen3-30B-A3B` MoE the per-block rows scale by its `n_layers` instead of 94.
+
+| # | Module    | Type    | Count |
+|---|-----------|---------|-------|
+| 1 | Embed     | embed   | 1     |
+| 2 | RMSNorm   | norm    | 94    |
+| 3 | GQA Attn  | attn    | 94    |
+| 4 | RMSNorm   | norm    | 94    |
+| 5 | MoE FFN   | ffn-moe | 94    |
+| 6 | RMSNorm   | norm    | 1     |
+| 7 | LMHead    | head    | 1     |
 
 ## Key parameters
 

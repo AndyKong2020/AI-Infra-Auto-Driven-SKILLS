@@ -102,14 +102,51 @@ Don't draw `Block × N` as a single rectangle with `× N` in the label — losin
 
 ## Sections in each entry file
 
-Fixed order, every entry:
+Fixed order. Block-level diagrams use all sections; module-detail diagrams omit `## Model summary` and `## Modules`.
 
-1. Frontmatter (id, title, aliases, rank, source_basis)
-2. Top-level heading `# <Title>`
-3. Mermaid `flowchart TD` block — the diagram itself, no narration before it
-4. `## Key parameters` table — only fields that affect inference shape or runtime behavior (n_layers, hidden, vocab, n_heads, lora ranks, n_experts, top_k, E_inter). Skip ones that don't.
-5. `## Notes` — quirks not visible in the graph: dense-vs-MoE layer ranges, KV cache shape, RoPE specifics, special routing rules, quantization points, cross-refs via `[[id]]`.
-6. `## Source basis` — what the entry was transcribed / verified against.
+| # | Section | Block-level | Module-detail | What it carries |
+|---|---|---|---|---|
+| 1 | Frontmatter (id, title, aliases, rank, `family_type`, source_basis) | ✓ | ✓ (no `family_type`) | Machine-readable metadata |
+| 2 | Top-level heading `# <Title>` | ✓ | ✓ | — |
+| 3 | `## Model summary` table | ✓ | — | Model-level: `family_type`, total_params, active_params, context_length, precision |
+| 4 | Mermaid `flowchart TD` block | ✓ | ✓ | The diagram itself, no narration before it |
+| 5 | `## Modules (in forward order)` table | ✓ | — | Per-module `type` tag + `Count` column = forward-pass instantiations |
+| 6 | `## Key parameters` table | ✓ | ✓ | Detailed numerical fields (lora ranks, head dims, intermediate sizes) |
+| 7 | `## Notes` | ✓ | ✓ | Quirks not in the graph: dense-vs-MoE ranges, KV cache shape, RoPE specifics, routing rules, cross-refs via `[[id]]` |
+| 8 | `## Source basis` | ✓ | ✓ | Pointers to reference image (if any), `config.json`, `modeling_*.py` |
+
+### `## Model summary` shape
+
+```
+| Field          | Value                  |
+|----------------|------------------------|
+| family_type    | moe-llm                |
+| total_params   | 671B                   |
+| active_params  | 37B (top-8 of 256 + 1) |
+| context_length | 128K                   |
+| precision      | bf16 (stock)           |
+```
+
+`family_type` must come from the closed vocabulary in `authoring-policy.md` § 4a.
+
+### `## Modules` shape
+
+```
+| # | Module    | Type    | Count |
+|---|-----------|---------|-------|
+| 1 | Embed     | embed   | 1     |
+| 2 | RMSNorm   | norm    | 61    |
+| 3 | MLA Attn  | attn    | 61    |
+| 4 | RMSNorm   | norm    | 61    |
+| 5 | MoE FFN   | ffn-moe | 58    |
+| 5*| Dense FFN | ffn-dense | 3   |
+| 6 | RMSNorm   | norm    | 1     |
+| 7 | LMHead    | head    | 1     |
+```
+
+Row order = forward-pass execution order. `Type` values come from the closed vocabulary in `authoring-policy.md` § 4a. `Count` is the number of times the module is instantiated across the whole forward pass (1 for one-shot model-boundary modules; `n_layers` for per-block modules; partials when a position alternates between implementations).
+
+When a position has alternating implementations (e.g. dense FFN at layers 1–3, MoE FFN at layers 4–61), write them as `5` and `5*` rows; below the table, note the position-to-layer mapping in one prose line.
 
 ## Naming
 

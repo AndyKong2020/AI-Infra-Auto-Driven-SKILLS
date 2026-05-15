@@ -9,6 +9,7 @@ aliases:
   - deepseek r1
   - deepseek-r1
 rank: 1
+family_type: moe-llm
 source_basis:
   image: model-architecture-diagram :: deepseek-v3-architecture (InfraTech models/deepseek_v3/deepseek_v3_architecture.jpg)
   config: deepseek-ai/DeepSeek-V3.2-Exp/config.json
@@ -16,6 +17,16 @@ source_basis:
 ---
 
 # DeepSeek V3.2 architecture (block-level)
+
+## Model summary
+
+| Field          | Value                  |
+|----------------|------------------------|
+| family_type    | moe-llm                |
+| total_params   | 671B                   |
+| active_params  | 37B (top-8 of 256 + 1) |
+| context_length | 128K                   |
+| precision      | bf16 (stock)           |
 
 ```mermaid
 flowchart TD
@@ -38,6 +49,21 @@ flowchart TD
     fnorm --> head["LMHead : 7168 → V"]
     head --> logits([logits])
 ```
+
+## Modules (in forward order)
+
+| #  | Module    | Type      | Count |
+|----|-----------|-----------|-------|
+| 1  | Embed     | embed     | 1     |
+| 2  | RMSNorm   | norm      | 61    |
+| 3  | MLA Attn  | attn      | 61    |
+| 4  | RMSNorm   | norm      | 61    |
+| 5  | MoE FFN   | ffn-moe   | 58    |
+| 5* | Dense FFN | ffn-dense | 3     |
+| 6  | RMSNorm   | norm      | 1     |
+| 7  | LMHead    | head      | 1     |
+
+Position 5 alternates by layer index: `ffn-dense` for layers 1–3, `ffn-moe` for layers 4–61.
 
 ## Key parameters
 

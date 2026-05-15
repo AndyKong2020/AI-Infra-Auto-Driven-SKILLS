@@ -1,8 +1,19 @@
 # Authoring policy
 
-How to decide **what to draw** and **how many diagrams per model** when adding an entry to this skill. Companion to `mermaid-style-guide.md` (which covers *how to draw*).
+How to decide **what to draw**, **how many diagrams per model**, and **which closed-vocabulary tags to apply**, when adding an entry to this skill. Companion to `mermaid-style-guide.md` (which covers *how to draw*).
 
 Read this before adding any new model.
+
+## 0. Primary consumer
+
+The primary consumer of this skill's output is **another agent** doing model architecture decomposition, profiling, kernel optimization, or similar work. Visual rendering for humans is a side benefit.
+
+This affects every other rule in this document:
+
+- Formats must be **agent-parseable** (Mermaid source, tables with closed-vocabulary tags, prose Notes).
+- Decomposition granularity must be **deterministic** (same model → same module list across sessions).
+- Tag vocabularies must be **closed and stable** (no silent invention; extend the policy first).
+- Scope is **stock HF model only**: deployment overlays (quantization, parallelism, kernel choice) are explicitly out of scope and left to the downstream consumer.
 
 ## 1. Sourcing policy: "anchor + refine"
 
@@ -74,14 +85,47 @@ This skill targets text-graph-friendly architectures. Diffusion / video / 3D mod
 
 When a new in-scope model lands, the author follows the playbook below; no additional approval needed unless the model uses a module not yet in section 3 (in which case extend section 3 first, then author).
 
+## 4a. Closed-vocabulary tags
+
+Two tag spaces are closed and frozen. Authors choose values from these lists; do not invent new ones. If a model genuinely doesn't fit, propose an extension to this section in the same PR as the new model.
+
+### `family_type` (model-level, used in frontmatter + `## Model summary`)
+
+| Tag | Meaning |
+|---|---|
+| `dense-llm` | Standard dense transformer LLM (e.g. Llama-3 dense, Qwen3 dense). |
+| `moe-llm` | MoE LLM (e.g. DeepSeek V3 family, Qwen3-MoE, Hunyuan-A13B, Llama 4 MoE). |
+| `vlm-llm` | VLM with a dense-LLM backbone (e.g. Qwen3-VL on dense LLM). |
+| `vlm-moe-llm` | VLM with an MoE-LLM backbone (e.g. Kimi-VL on MoE). |
+| `hybrid-attn-llm` | LLM whose attention is a hybrid of multiple types (linear+softmax, mamba+attn, etc.). |
+| `diffusion` | Tag reserved; this skill currently does not host diffusion entries. |
+
+### `type` (per-module, used in `## Modules` table)
+
+| Tag | Meaning |
+|---|---|
+| `embed` | Token / position embedding layer at the front of the network. |
+| `norm` | Any normalization (RMSNorm, LayerNorm). |
+| `attn` | Any attention block (MHA, GQA, MQA, MLA, hybrid attention). |
+| `ffn-dense` | Dense feed-forward block (SwiGLU, GeGLU, GLU, vanilla MLP). |
+| `ffn-moe` | Any MoE feed-forward block (with or without shared experts; routed top-k or expert-choice). |
+| `fusion` | Cross-modal fusion in VLMs (cross-attention into LLM, projector / merger / Q-Former / perceiver). |
+| `vision-encoder` | Vision encoder tower in a VLM (SigLIP / CLIP / custom). |
+| `head` | Output projection layer (`LMHead` for LLMs, classification head, etc.). |
+| `mtp` | Multi-token prediction head (DeepSeek-style auxiliary prediction). |
+
+When a module behaves as more than one of these (rare), pick the *dominant* compute type and explain in `## Notes`. Don't list multiple tags.
+
 ## 5. Authoring playbook (per new model)
 
 1. **Identify modules used.** Read `config.json` and skim `modeling_*.py` (`<Model>DecoderLayer.forward`, attention class, FFN/MoE class, any head module).
 2. **Look up each module in section 3.** Tally: 1 (baseline block diagram) + 1 per "auto-earn" module hit + conditional ones per their condition. Verify total ≤ 3.
-3. **For each diagram to produce**, follow the sourcing rule in section 1.
-4. **Write the `.md` file** per `mermaid-style-guide.md`'s file-structure rule (frontmatter, top heading, Mermaid block, `## Key parameters`, `## Notes`, `## Source basis`).
-5. **Cross-link** the block diagram to detail diagrams via `[[detail-id]]` in `## Notes`, and the detail diagrams back to the block diagram via `[[block-id]]`.
-6. **Self-check (once resolver is implemented)**: resolver matches the model by all expected aliases; ids match filenames; no id collisions.
+3. **Pick the model's `family_type`** from section 4a's closed vocabulary.
+4. **For each diagram to produce**, follow the sourcing rule in section 1.
+5. **Write the `.md` file** per `mermaid-style-guide.md`'s file-structure rule. For block-level diagrams that means the full section order including `## Model summary` and `## Modules`; for module-detail diagrams, omit those two sections (the file *is* one module's interior).
+6. **In `## Modules`**, every row carries a closed-vocabulary `type` tag from section 4a; the `Count` column is the number of times the module is instantiated in the full forward pass (1 for one-shot modules at model boundaries, `n_layers` for per-block modules). When a position alternates between two implementations (e.g. dense FFN for layers 1–3 + MoE FFN for the rest), list both as separate rows and note the position-to-layer mapping below the table.
+7. **Cross-link** the block diagram to detail diagrams via `[[detail-id]]` in `## Notes`, and the detail diagrams back to the block diagram via `[[block-id]]`.
+8. **Self-check (once resolver is implemented)**: resolver matches the model by all expected aliases; ids match filenames; no id collisions; every `family_type` and `type` value is in the closed vocabulary.
 
 ## 6. Extending this policy
 
