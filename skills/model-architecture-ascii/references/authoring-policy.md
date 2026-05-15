@@ -116,7 +116,7 @@ The matrix below is the operational rule. When authoring a new model, list the m
 | 15 | Step 3.5 Flash | architecture | ⏳ todo |
 | 16 | Llama 4 | MoE shared expert | ⏳ todo — sibling only has one image, may need additional config-driven content |
 | 17 | Hunyuan-A13B | architecture, shared-routed | ✅ authored — `hunyuan-a13b-architecture` + shared `moe-shared-routed.md` |
-| 18 | Kimi-VL | architecture, training-flow | ⏳ todo — second VLM; opportunity to validate whether `deepstack.md` generalises or a new fusion variant is needed |
+| 18 | Kimi-VL | architecture, training-flow | ✅ authored — `kimi-vl-a3b-architecture` reuses shared `mla.md` + `moe-shared-routed.md`; fusion is an MLP projector (no DeepStack), described inline in Notes (too trivial for its own module file) |
 
 **Out-of-scope (sibling has, this skill does not):** Z-Image, Wan2.1, Wan2.2, HunyuanVideo, Hunyuan3D-2, FLUX.1 — diffusion / video / 3D.
 

@@ -13,11 +13,12 @@ source_basis:
   reference_models:
     - deepseek-v3-architecture
     - hunyuan-a13b-architecture
+    - kimi-vl-a3b-architecture
 ---
 
 # Shared + Routed MoE FFN — structural pattern
 
-> Model-agnostic structural diagram. Verified to apply to: DeepSeek V3, DeepSeek R1, Hunyuan-A13B-Instruct. Any future model with `ffn_type=moe-shared+routed` reuses this file provided the topology matches; per-model variation (e.g. router balancing strategy) goes in the model's own Notes. Per-model numerical values (top-k, n_routed, n_shared, per-expert intermediate dim) live in each model's own `## Key parameters` table.
+> Model-agnostic structural diagram. Verified to apply to: DeepSeek V3, DeepSeek R1, Hunyuan-A13B-Instruct, Kimi-VL-A3B-Instruct (text backbone). Any future model with `ffn_type=moe-shared+routed` reuses this file provided the topology matches; per-model variation (e.g. router balancing strategy) goes in the model's own Notes. Per-model numerical values (top-k, n_routed, n_shared, per-expert intermediate dim) live in each model's own `## Key parameters` table.
 >
 > **DeepSeek V3.2-Exp** config preserves the same MoE topology and numbers as V3 (256 routed + 1 shared, top-8, `moe_intermediate=2048`), so by inspection this pattern likely applies to V3.2 as well — but until V3.2 has its own verified architecture file in this skill, it is not listed as a reference model here.
 
