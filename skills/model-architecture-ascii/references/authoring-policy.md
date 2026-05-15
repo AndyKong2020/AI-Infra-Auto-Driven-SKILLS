@@ -89,14 +89,40 @@ The matrix below is the operational rule. When authoring a new model, list the m
 
 ## 4. In-scope models
 
-This skill targets text-graph-friendly architectures. Diffusion / video / 3D model architectures are visual-spatial enough that ASCII/Mermaid expresses them poorly — those stay with the image-based sibling skill.
+### Family scope rule
 
-| Scope | Families |
-|---|---|
-| **In-scope** | DeepSeek V3 / R1 (V3 + R1 share architecture; **authored**); DeepSeek V3.2-Exp (separate architecture using DSA + MTP; **not yet authored**, requires custom-inference-code verification); GLM-5, Qwen3 (dense + MoE) / Qwen3.5, Kimi K2 / K2.5, MiniMax M2 / M2.5, Step 3.5 Flash, Hunyuan-A13B (**authored**), Llama 4 (dense + MoE), Qwen3-VL, Kimi-VL |
-| **Out-of-scope** | Z-Image, Wan2.1, Wan2.2, HunyuanVideo, Hunyuan3D-2, FLUX.1 |
+**Family scope is pinned to the sibling `model-architecture-diagram` skill's coverage**, filtered to LLM / MoE / VLM families. When the sibling skill adds an in-scope family, this skill picks it up; when the sibling drops one, this skill drops it. Diffusion / video / 3D model architectures stay with the image-based sibling — ASCII / Mermaid expresses them poorly.
 
-When a new in-scope model lands, the author follows the playbook below; no additional approval needed unless the model uses a module not yet in section 3 (in which case extend section 3 first, then author).
+**Module file scope is NOT pinned to sibling.** Module files (`mla.md`, `moe-shared-routed.md`, `deepstack.md`, etc.) are decided independently from the per-model structural classification in § 3, not from how many sub-diagrams sibling chose to draw. If sibling has three Hunyuan-A13B images, this skill might still produce only one Hunyuan model file plus a `[[moe-shared-routed]]` cross-link — because the shared+routed MoE structure is already covered by the shared module file. Reverse direction: if a model uses a § 3 auto-earn module that sibling never broke out into its own image, we still produce the module file.
+
+### Sibling-aligned family table (current snapshot)
+
+| # | Family | Sibling entries | This skill status |
+|---|---|---|---|
+| 1 | DeepSeek V3 (+ R1) | architecture, MLA-MHA, MLA-MQA | ✅ authored — `deepseek-v3-architecture` + shared `mla.md`, `moe-shared-routed.md` |
+| 2 | DeepSeek V3.2-Exp | architecture, DSA-MQA, DSA-MHA | ⚠️ gap — needs custom-inference-code read to author DSA + MTP module files |
+| 3 | DeepSeek V4 | architecture | ⚠️ verify — sibling has the image; HF config availability unknown; treat as gap until config is fetched and verified per § 1a |
+| 4 | GLM-5 | architecture | ⏳ todo |
+| 5 | Kimi K2 | architecture | ⏳ todo |
+| 6 | Kimi K2.5 | architecture | ⏳ todo |
+| 7 | MiniMax M2 | architecture, MLP, expert-routing | ⏳ todo — may trigger `attention_type` vocabulary extension (linear-attn / hybrid-*) |
+| 8 | MiniMax M2.5 | architecture | ⏳ todo |
+| 9 | Qwen3 dense | model-structure | ✅ authored — `qwen3-dense-architecture` |
+| 10 | Qwen3 MoE | MoE structure, shared-expert comparison | ✅ authored — `qwen3-moe-block` |
+| 11 | Qwen3.5 dense | 27B dense architecture | ⏳ todo |
+| 12 | Qwen3.5 MoE | 397B-A17B architecture | ⏳ todo |
+| 13 | Qwen3-VL 32B | 32B architecture | ✅ authored — `qwen3-vl-32b-architecture` + shared `deepstack.md` |
+| 14 | Qwen3-VL 235B-A22B | 235B-A22B architecture, DeepStack feat extraction, visual injection | ⏳ todo — reuses `deepstack.md` and likely `moe-shared-routed.md` from MoE backbone |
+| 15 | Step 3.5 Flash | architecture | ⏳ todo |
+| 16 | Llama 4 | MoE shared expert | ⏳ todo — sibling only has one image, may need additional config-driven content |
+| 17 | Hunyuan-A13B | architecture, shared-routed | ✅ authored — `hunyuan-a13b-architecture` + shared `moe-shared-routed.md` |
+| 18 | Kimi-VL | architecture, training-flow | ⏳ todo — second VLM; opportunity to validate whether `deepstack.md` generalises or a new fusion variant is needed |
+
+**Out-of-scope (sibling has, this skill does not):** Z-Image, Wan2.1, Wan2.2, HunyuanVideo, Hunyuan3D-2, FLUX.1 — diffusion / video / 3D.
+
+Status legend: ✅ authored, ⏳ todo, ⚠️ gap / verify required. Gap entries must be either authored once verification is possible or kept as documented gaps; they cannot be aliased onto another model's file (cf. the V3.2-on-V3 incident).
+
+When a new in-scope sibling entry appears, the author follows the playbook in § 5; no additional approval needed unless the model uses a module not yet in section 3 (extend section 3 first, then author).
 
 ## 4a. Closed-vocabulary tags
 
