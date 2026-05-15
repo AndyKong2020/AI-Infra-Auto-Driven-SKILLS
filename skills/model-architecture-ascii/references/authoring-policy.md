@@ -113,7 +113,7 @@ The matrix below is the operational rule. When authoring a new model, list the m
 | 12 | Qwen3.5 MoE | 397B-A17B architecture | ⏳ todo |
 | 13 | Qwen3-VL 32B | 32B architecture | ✅ authored — `qwen3-vl-32b-architecture` + shared `deepstack.md` |
 | 14 | Qwen3-VL 235B-A22B | 235B-A22B architecture, DeepStack feat extraction, visual injection | ⏳ todo — reuses `deepstack.md` and likely `moe-shared-routed.md` from MoE backbone |
-| 15 | Step 3.5 Flash | architecture | ⏳ todo |
+| 15 | Step 3.5 Flash | architecture | ✅ authored — `step-3-5-flash-architecture` reuses shared `moe-shared-routed.md`; mixed dense (layers 0–2) + MoE (3–44); per-layer full/sliding GQA + MTP-3 covered in Notes |
 | 16 | Llama 4 | MoE shared expert | ⏳ todo — sibling only has one image, may need additional config-driven content |
 | 17 | Hunyuan-A13B | architecture, shared-routed | ✅ authored — `hunyuan-a13b-architecture` + shared `moe-shared-routed.md` |
 | 18 | Kimi-VL | architecture, training-flow | ✅ authored — `kimi-vl-a3b-architecture` reuses shared `mla.md` + `moe-shared-routed.md`; fusion is an MLP projector (no DeepStack), described inline in Notes (too trivial for its own module file) |
