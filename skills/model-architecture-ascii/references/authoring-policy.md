@@ -103,7 +103,7 @@ The matrix below is the operational rule. When authoring a new model, list the m
 | 2 | DeepSeek V3.2-Exp | architecture, DSA-MQA, DSA-MHA | ⚠️ gap — needs custom-inference-code read to author DSA + MTP module files |
 | 3 | DeepSeek V4 | architecture | ⚠️ verify — sibling has the image; HF config availability unknown; treat as gap until config is fetched and verified per § 1a |
 | 4 | GLM-5 | architecture | ⏳ todo |
-| 5 | Kimi K2 | architecture | ⏳ todo |
+| 5 | Kimi K2 | architecture | ✅ authored — `kimi-k2-architecture` reuses shared `mla.md` + `moe-shared-routed.md` (Kimi K2 reuses `DeepseekV3ForCausalLM` with `model_type=kimi_k2`) |
 | 6 | Kimi K2.5 | architecture | ⏳ todo |
 | 7 | MiniMax M2 | architecture, MLP, expert-routing | ⏳ todo — may trigger `attention_type` vocabulary extension (linear-attn / hybrid-*) |
 | 8 | MiniMax M2.5 | architecture | ⏳ todo |
