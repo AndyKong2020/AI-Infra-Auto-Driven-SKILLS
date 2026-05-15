@@ -44,9 +44,9 @@ flowchart TD
     RoPE_q --> q_rope["q_rope : 128h × 64"]
     RoPE_k --> k_rope["k_rope : 64 (shared)"]
 
-    q_nope --> q_concat([concat per-head])
+    q_nope --> q_concat((concat))
     q_rope --> q_concat
-    k_nope --> k_concat([concat per-head · k_rope broadcast])
+    k_nope --> k_concat((concat))
     k_rope --> k_concat
 
     q_concat --> attn["softmax(qkᵀ / √d) · v"]

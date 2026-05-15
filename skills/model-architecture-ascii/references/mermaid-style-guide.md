@@ -15,13 +15,29 @@ Conventions for diagrams stored in `references/diagrams/*.md`. Applies to all ne
 
 ## Node conventions
 
+Three shapes, each with one role. No overlap.
+
 | Role | Shape | Mermaid syntax |
 |---|---|---|
-| Input / output tensor | rounded capsule | `id([label])` |
-| Module / op / projection | rectangle | `id[label]` |
-| Join / concat | parenthesised capsule | `id([concat per-head])` |
+| Flow endpoint (input / output of the diagram, e.g. `input tokens`, `logits`, `x`, `output`) | capsule (stadium) | `id([label])` |
+| Module / op / projection / tensor | rectangle | `id[label]` |
+| Merge / join / concat / fan-in | circle | `id((label))` |
 
-Avoid stadium / hexagon / trapezoid shapes — too many shapes hurts uniformity across the skill.
+Avoid the other Mermaid shapes (subroutine `[[ ]]`, cylinder `[( )]`, diamond `{ }`, hexagon `{{ }}`, parallelogram `[/ /]`, double-circle `((( )))`). Each extra shape forces the reader to decode another visual convention; sticking to three keeps the skill uniform across hundreds of future entries.
+
+### Shape gallery
+
+The three shapes side by side (renders on any Mermaid-aware viewer):
+
+```mermaid
+flowchart LR
+    a([capsule · flow endpoint])
+    b[rectangle · module or tensor]
+    c((circle · merge))
+    a --> b --> c
+```
+
+Use this as the canonical reference when picking a shape for a new node.
 
 ## Node label content (hard rules)
 
