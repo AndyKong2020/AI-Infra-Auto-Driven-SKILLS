@@ -8,7 +8,9 @@ aliases:
   - qwen3-235b-a22b
   - qwen3-30b-a3b
 rank: 1
-family_type: moe-llm
+modality: text
+attention_type: gqa
+ffn_type: moe-routed
 source_basis:
   image: model-architecture-diagram :: qwen3-moe (self-llm models/Qwen3/images/01-02.png)
   config: Qwen/Qwen3-235B-A22B/config.json
@@ -21,13 +23,13 @@ source_basis:
 
 Values shown are for **Qwen3-235B-A22B**; smaller Qwen3 MoE variants share this `family_type` and topology with different scalar values.
 
-| Field          | Value                |
-|----------------|----------------------|
-| family_type    | moe-llm              |
-| total_params   | 235B                 |
-| active_params  | 22B (top-8 of 128)   |
-| context_length | 128K                 |
-| precision      | bf16 (stock)         |
+| Field          | Value              |
+|----------------|--------------------|
+| modality       | text               |
+| attention_type | gqa                |
+| ffn_type       | moe-routed         |
+| total_params   | 235B               |
+| active_params  | 22B (top-8 of 128) |
 
 ```mermaid
 flowchart TD

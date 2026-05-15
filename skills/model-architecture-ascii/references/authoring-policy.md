@@ -87,18 +87,43 @@ When a new in-scope model lands, the author follows the playbook below; no addit
 
 ## 4a. Closed-vocabulary tags
 
-Two tag spaces are closed and frozen. Authors choose values from these lists; do not invent new ones. If a model genuinely doesn't fit, propose an extension to this section in the same PR as the new model.
+Four tag spaces are closed and frozen. Authors choose values from these lists; do not invent new ones. If a model genuinely doesn't fit, propose an extension to this section in the same PR as the new model.
 
-### `family_type` (model-level, used in frontmatter + `## Model summary`)
+Three of the four are **model-level orthogonal axes** (used in frontmatter + `## Model summary`). Each axis captures one independent decision-affecting dimension; downstream agents can filter on any axis alone (e.g. "all `attention_type=mla` models", "all `ffn_type=moe-shared+routed` models").
+
+### `modality` (model-level)
 
 | Tag | Meaning |
 |---|---|
-| `dense-llm` | Standard dense transformer LLM (e.g. Llama-3 dense, Qwen3 dense). |
-| `moe-llm` | MoE LLM (e.g. DeepSeek V3 family, Qwen3-MoE, Hunyuan-A13B, Llama 4 MoE). |
-| `vlm-llm` | VLM with a dense-LLM backbone (e.g. Qwen3-VL on dense LLM). |
-| `vlm-moe-llm` | VLM with an MoE-LLM backbone (e.g. Kimi-VL on MoE). |
-| `hybrid-attn-llm` | LLM whose attention is a hybrid of multiple types (linear+softmax, mamba+attn, etc.). |
-| `diffusion` | Tag reserved; this skill currently does not host diffusion entries. |
+| `text` | Text-only LLM. |
+| `text+vision` | VLM (image / video inputs). |
+| `text+audio` | Speech / audio-conditioned LLM. |
+| `text+vision+audio` | Omni-modal model. |
+
+### `attention_type` (model-level)
+
+| Tag | Meaning |
+|---|---|
+| `mha` | Standard multi-head attention. |
+| `gqa` | Grouped-query attention. |
+| `mqa` | Multi-query attention. |
+| `mla` | Multi-head latent attention (DeepSeek family). |
+| `linear-attn` | Linear / kernel attention (Performer, LinAttn, etc.). |
+| `mamba` | State-space model (Mamba family) used in place of attention. |
+| `hybrid-{a}+{b}` | Concrete hybrid composition, e.g. `hybrid-mla+linear-attn`. Use only when more than one attention type is interleaved across layers. |
+| `chunked-{base}` | Long-context chunking variant of a base attention, e.g. `chunked-gqa`. |
+
+For variants that change only parameters (head count, head dim, RoPE base) of an existing type, keep the base tag and describe the variation in `## Notes`.
+
+### `ffn_type` (model-level)
+
+| Tag | Meaning |
+|---|---|
+| `dense` | Dense feed-forward only (SwiGLU / GeGLU / GLU / vanilla MLP). |
+| `moe-routed` | Top-k routed MoE, no shared expert (Qwen3-MoE, Mixtral-style). |
+| `moe-shared+routed` | Top-k routed experts **plus** one or more shared experts always-on in parallel (DeepSeek V3 family, Hunyuan-A13B). |
+
+For models that mix dense FFN at some layers and MoE at others (e.g. DeepSeek V3.2 with dense FFN at layers 1–3), `ffn_type` records the **dominant** variant; the exception is noted in `## Notes` and reflected in the `## Modules` table with a `5*`-style alternating row.
 
 ### `type` (per-module, used in `## Modules` table)
 
@@ -120,12 +145,12 @@ When a module behaves as more than one of these (rare), pick the *dominant* comp
 
 1. **Identify modules used.** Read `config.json` and skim `modeling_*.py` (`<Model>DecoderLayer.forward`, attention class, FFN/MoE class, any head module).
 2. **Look up each module in section 3.** Tally: 1 (baseline block diagram) + 1 per "auto-earn" module hit + conditional ones per their condition. Verify total ≤ 3.
-3. **Pick the model's `family_type`** from section 4a's closed vocabulary.
+3. **Pick the model's three model-level tags** — `modality`, `attention_type`, `ffn_type` — from section 4a's closed vocabularies. Each axis is independent; do not encode them into a single combined tag.
 4. **For each diagram to produce**, follow the sourcing rule in section 1.
 5. **Write the `.md` file** per `mermaid-style-guide.md`'s file-structure rule. For block-level diagrams that means the full section order including `## Model summary` and `## Modules`; for module-detail diagrams, omit those two sections (the file *is* one module's interior).
 6. **In `## Modules`**, every row carries a closed-vocabulary `type` tag from section 4a; the `Count` column is the number of times the module is instantiated in the full forward pass (1 for one-shot modules at model boundaries, `n_layers` for per-block modules). When a position alternates between two implementations (e.g. dense FFN for layers 1–3 + MoE FFN for the rest), list both as separate rows and note the position-to-layer mapping below the table.
 7. **Cross-link** the block diagram to detail diagrams via `[[detail-id]]` in `## Notes`, and the detail diagrams back to the block diagram via `[[block-id]]`.
-8. **Self-check (once resolver is implemented)**: resolver matches the model by all expected aliases; ids match filenames; no id collisions; every `family_type` and `type` value is in the closed vocabulary.
+8. **Self-check (once resolver is implemented)**: resolver matches the model by all expected aliases; ids match filenames; no id collisions; every `modality` / `attention_type` / `ffn_type` / `type` value is in the closed vocabulary.
 
 ## 6. Extending this policy
 

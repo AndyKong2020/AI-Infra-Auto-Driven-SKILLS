@@ -9,7 +9,9 @@ aliases:
   - deepseek r1
   - deepseek-r1
 rank: 1
-family_type: moe-llm
+modality: text
+attention_type: mla
+ffn_type: moe-shared+routed
 source_basis:
   image: model-architecture-diagram :: deepseek-v3-architecture (InfraTech models/deepseek_v3/deepseek_v3_architecture.jpg)
   config: deepseek-ai/DeepSeek-V3.2-Exp/config.json
@@ -22,11 +24,11 @@ source_basis:
 
 | Field          | Value                  |
 |----------------|------------------------|
-| family_type    | moe-llm                |
+| modality       | text                   |
+| attention_type | mla                    |
+| ffn_type       | moe-shared+routed      |
 | total_params   | 671B                   |
 | active_params  | 37B (top-8 of 256 + 1) |
-| context_length | 128K                   |
-| precision      | bf16 (stock)           |
 
 ```mermaid
 flowchart TD

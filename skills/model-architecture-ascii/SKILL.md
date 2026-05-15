@@ -20,8 +20,8 @@ This skill is the single source of truth for both. Same prior every session.
 
 For each model with a file under `references/diagrams/<id>.md`:
 
-1. **Frontmatter** — id, title, aliases, rank, `family_type` (closed vocabulary), source_basis.
-2. **`## Model summary`** — model-level metadata table (family_type, total_params, active_params, context_length, precision, ...). Block-level diagrams only.
+1. **Frontmatter** — id, title, aliases, rank, three model-level closed-vocabulary tags (`modality`, `attention_type`, `ffn_type`), source_basis.
+2. **`## Model summary`** — model-level orthogonal tags (modality, attention_type, ffn_type) + scale numbers (total_params, active_params). Block-level diagrams only. Deliberately omits deployment-specific fields like `context_length` and `precision`.
 3. **Mermaid `flowchart TD` block** — visual structure; source-text is the agent-parseable form of the graph.
 4. **`## Modules (in forward order)`** — closed-vocabulary `type` tag per module + `Count` column = number of times each module is instantiated in the full forward pass. Block-level diagrams only.
 5. **`## Key parameters`** — detailed numerical fields (lora ranks, head dims, intermediate sizes, ...) from `config.json`.
@@ -44,6 +44,6 @@ Module-detail diagrams (e.g. `deepseek-v3.2-mla.md`) omit `## Model summary` and
 
 ## Consumer guarantees
 
-- `family_type` and `type` come from closed vocabularies declared in `authoring-policy.md`; downstream agents can rely on stable tag values for filtering / classification.
+- `modality`, `attention_type`, `ffn_type` (model-level) and `type` (per-module) come from closed vocabularies declared in `authoring-policy.md`; downstream agents can rely on stable tag values for filtering / classification along independent axes.
 - `Modules` table row order = forward-pass execution order. Profiling agents can fold `Count` × per-invocation cost without re-deriving order.
 - Mermaid block source is canonical: node ids and labels are stable across edits unless a structural change is intended.
