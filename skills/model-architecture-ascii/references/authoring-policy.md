@@ -81,7 +81,7 @@ This skill targets text-graph-friendly architectures. Diffusion / video / 3D mod
 
 | Scope | Families |
 |---|---|
-| **In-scope** | DeepSeek V3 / V3.2-Exp / R1, GLM-5, Qwen3 (dense + MoE) / Qwen3.5, Kimi K2 / K2.5, MiniMax M2 / M2.5, Step 3.5 Flash, Hunyuan-A13B, Llama 4 (dense + MoE), Qwen3-VL, Kimi-VL |
+| **In-scope** | DeepSeek V3 / R1 (V3 + R1 share architecture; **authored**); DeepSeek V3.2-Exp (separate architecture using DSA + MTP; **not yet authored**, requires custom-inference-code verification); GLM-5, Qwen3 (dense + MoE) / Qwen3.5, Kimi K2 / K2.5, MiniMax M2 / M2.5, Step 3.5 Flash, Hunyuan-A13B (**authored**), Llama 4 (dense + MoE), Qwen3-VL, Kimi-VL |
 | **Out-of-scope** | Z-Image, Wan2.1, Wan2.2, HunyuanVideo, Hunyuan3D-2, FLUX.1 |
 
 When a new in-scope model lands, the author follows the playbook below; no additional approval needed unless the model uses a module not yet in section 3 (in which case extend section 3 first, then author).
