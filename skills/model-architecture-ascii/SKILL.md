@@ -35,7 +35,16 @@ The diagrams currently committed are picked to stress-test the style guide on th
 - `deepseek-v3.2-mla` — module detail with multi-branch fan-out / RoPE injection / concat.
 - `qwen3-moe-block` — second model family (different MoE flavor: no shared expert) to verify the style guide isn't DeepSeek-specific.
 
+## Authoring policy
+
+Before adding a new model, read `references/authoring-policy.md`. It defines:
+
+- the **sourcing rule** (anchor topology to the reference image, take numbers from `config.json`, verify graph with `modeling_*.py`, refine editorially only when noted);
+- the **module catalogue** that decides how many diagrams a model gets (which modules auto-earn a detail diagram, which never do, which are conditional);
+- the **in-scope model set** (LLM / MoE / VLM in scope; diffusion / video / 3D out of scope for this skill).
+
 ## References
 
-- `references/mermaid-style-guide.md` — Mermaid conventions for new diagrams.
+- `references/authoring-policy.md` — what to draw, how many, and from which sources.
+- `references/mermaid-style-guide.md` — how to draw each diagram (shapes, label rules, file structure).
 - `references/diagrams/*.md` — diagram entries, one per artifact.
