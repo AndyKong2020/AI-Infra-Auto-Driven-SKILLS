@@ -22,7 +22,7 @@ flowchart TD
 
     x --> WDQ[W_DQ]
     x --> WDKV[W_DKV]
-    x --> WKR["W_KR (k_rope proj)"]
+    x --> WKR["W_KR<br/><i>k_rope projection</i>"]
 
     WDQ --> cQ["c_Q : 1536"]
     WDKV --> cKV["c_KV : 512"]

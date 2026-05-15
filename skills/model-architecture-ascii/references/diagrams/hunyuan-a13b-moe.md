@@ -21,10 +21,10 @@ flowchart TD
     x([x_token])
     x --> n[RMSNorm]
 
-    n --> router["Router (W_g)"]
+    n --> router["Router<br/><i>W_g</i>"]
     n --> shared[Shared Expert]
 
-    router -->|top-8 indices + gates g_i| routed["Routed Experts<br/>(8 of 64 active per token)"]
+    router -->|top-8 indices + gates g_i| routed["Routed Experts<br/><i>8 of 64 active per token</i>"]
 
     routed --> sum((Σ))
     shared --> sum

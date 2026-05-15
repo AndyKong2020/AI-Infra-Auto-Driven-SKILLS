@@ -45,15 +45,21 @@ These rules keep module names and annotations visually distinct, and keep numeri
 
 **Module nodes** (modules / ops / projections in the data flow):
 
-- **Name only.** No numerical parameters in the label. Example: `attn[MLA Attn]`, `moe[MoE FFN]`, `n1[RMSNorm]`.
-- All numerical params (`n_heads`, `q_lora_rank`, `n_routed_experts`, ...) go into the `## Key parameters` table, not into node labels.
-- **Allowed exception — distinguishing-feature italic line.** When a module has a feature that differs from a same-named module in another well-known model (e.g. Qwen3 MoE has no shared expert vs DeepSeek MoE has 1), you may add a single italic line via HTML:
+- **Bare name on the first line.** No parenthetical annotations attached. Example: `attn[MLA Attn]`, `moe[MoE FFN]`, `n1[RMSNorm]`.
+- All numerical parameters (`n_heads`, `q_lora_rank`, `n_routed_experts`, ...) go into the `## Key parameters` table, not into node labels.
+- **Annotations — `<br/><i>...</i>` italic line, never plain-text parentheticals.** When a module node needs *anything* beyond its bare name, attach a single italic line via HTML on a new line:
 
-  ```
-  moe["MoE FFN<br/><i>no shared expert</i>"]
-  ```
+  | Annotation kind | Example |
+  |---|---|
+  | Distinguishing feature vs same-named module elsewhere | `moe["MoE FFN<br/><i>no shared expert</i>"]` |
+  | Behavior summary | `routed["Routed Experts<br/><i>8 of 64 active per token</i>"]` |
+  | Name elaboration | `WKR["W_KR<br/><i>k_rope projection</i>"]` or `router["Router<br/><i>W_g</i>"]` |
 
-  Use this only for *distinguishing* facts, not for parameter values. One italic line max per node.
+  Rules:
+  - Module name stays bare on line 1; everything else lives in the `<br/><i>...</i>` line on line 2.
+  - One italic line max per node.
+  - **Never use plain-text parentheticals** like `Router (W_g)` — always italic.
+  - Numerical parameter values (`q_lora=1536`) still belong in `## Key parameters`, not in italic lines.
 
 **Tensor / data-flow nodes** (latent tensors named in the forward pass, e.g. `c_Q`, `q_nope`, intermediate activations):
 
