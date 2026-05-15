@@ -22,13 +22,12 @@ source_basis:
 
 ## Model summary
 
-| Field          | Value                  |
-|----------------|------------------------|
-| modality       | text                   |
-| attention_type | mla                    |
-| ffn_type       | moe-shared+routed      |
-| total_params   | 671B                   |
-| active_params  | 37B (top-8 of 256 + 1) |
+| Field          | Value             |
+|----------------|-------------------|
+| modality       | text              |
+| attention_type | mla               |
+| ffn_type       | moe-shared+routed |
+| params         | 671BA37B          |
 
 ```mermaid
 flowchart TD

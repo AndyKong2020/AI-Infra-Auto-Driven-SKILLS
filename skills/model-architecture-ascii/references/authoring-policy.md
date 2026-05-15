@@ -87,9 +87,17 @@ When a new in-scope model lands, the author follows the playbook below; no addit
 
 ## 4a. Closed-vocabulary tags
 
-Four tag spaces are closed and frozen. Authors choose values from these lists; do not invent new ones. If a model genuinely doesn't fit, propose an extension to this section in the same PR as the new model.
+Four tag spaces are closed and frozen. Authors choose values from these lists; do not invent new ones.
 
-Three of the four are **model-level orthogonal axes** (used in frontmatter + `## Model summary`). Each axis captures one independent decision-affecting dimension; downstream agents can filter on any axis alone (e.g. "all `attention_type=mla` models", "all `ffn_type=moe-shared+routed` models").
+**Lazy-extension rule.** The vocabularies below are an initial seed; expect them to grow over time as new model families land. Extend a vocabulary **only** when a new model genuinely doesn't fit an existing tag — never preemptively add slots for hypothetical future architectures. When extending, **new tag names must follow conventions already used by**, in order of preference:
+
+1. The model's **HF model card / config** description.
+2. The model's **official technical report**.
+3. **Module class names** in `modeling_*.py`.
+
+Do not coin novel terminology inside this skill.
+
+Three of the four tag spaces are **model-level orthogonal axes** (used in frontmatter + `## Model summary`). Each axis captures one independent decision-affecting dimension; downstream agents can filter on any axis alone (e.g. "all `attention_type=mla` models", "all `ffn_type=moe-shared+routed` models").
 
 ### `modality` (model-level)
 

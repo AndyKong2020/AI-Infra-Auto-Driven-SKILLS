@@ -118,22 +118,29 @@ Fixed order. Block-level diagrams use all sections; module-detail diagrams omit 
 ### `## Model summary` shape
 
 ```
-| Field          | Value                  |
-|----------------|------------------------|
-| modality       | text                   |
-| attention_type | mla                    |
-| ffn_type       | moe-shared+routed      |
-| total_params   | 671B                   |
-| active_params  | 37B (top-8 of 256 + 1) |
+| Field          | Value             |
+|----------------|-------------------|
+| modality       | text              |
+| attention_type | mla               |
+| ffn_type       | moe-shared+routed |
+| params         | 671BA37B          |
 ```
 
 `modality`, `attention_type`, and `ffn_type` are three **orthogonal** axes; each value comes from its own closed vocabulary in `authoring-policy.md` § 4a. Do not collapse them into a single combined tag — downstream agents filter on each axis independently.
 
+`params` value format (single field, matches HF naming conventions like Qwen3-235B-A22B, DeepSeek-V3-671B-A37B):
+
+- **Dense models**: `<total>B` — e.g. `7B`, `70B`, `405B`.
+- **MoE models**: `<total>BA<active>B` — e.g. `671BA37B`, `235BA22B`, `30BA3B`.
+- **Mixed-FFN models** (e.g. DeepSeek V3 with dense layers 1–3 + MoE 4–61): use the MoE form; the dense-layer parameter contribution is part of `<total>`.
+
 Fields explicitly excluded from `## Model summary`:
+
 - `context_length` — deployment-specific; the stock HF max position embedding rarely matches the served context.
 - `precision` — virtually all in-scope models ship bf16 stock; the field doesn't differentiate.
+- Separate `total_params` / `active_params` — collapsed into the single `params` field above.
 
-Both belong (when relevant for a specific deployment) to the downstream agent's overlay, not to this prior.
+Anything deployment-specific belongs to the downstream agent's overlay, not to this prior.
 
 ### `## Modules` shape
 

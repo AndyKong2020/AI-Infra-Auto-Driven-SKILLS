@@ -21,7 +21,7 @@ This skill is the single source of truth for both. Same prior every session.
 For each model with a file under `references/diagrams/<id>.md`:
 
 1. **Frontmatter** — id, title, aliases, rank, three model-level closed-vocabulary tags (`modality`, `attention_type`, `ffn_type`), source_basis.
-2. **`## Model summary`** — model-level orthogonal tags (modality, attention_type, ffn_type) + scale numbers (total_params, active_params). Block-level diagrams only. Deliberately omits deployment-specific fields like `context_length` and `precision`.
+2. **`## Model summary`** — model-level orthogonal tags (modality, attention_type, ffn_type) + a single `params` field formatted as `<total>B` for dense models or `<total>BA<active>B` for MoE models (matching HF naming conventions like Qwen3-235B-A22B, DeepSeek-V3-671B-A37B). Block-level diagrams only. Deliberately omits deployment-specific fields like `context_length` and `precision`.
 3. **Mermaid `flowchart TD` block** — visual structure; source-text is the agent-parseable form of the graph.
 4. **`## Modules (in forward order)`** — closed-vocabulary `type` tag per module + `Count` column = number of times each module is instantiated in the full forward pass. Block-level diagrams only.
 5. **`## Key parameters`** — detailed numerical fields (lora ranks, head dims, intermediate sizes, ...) from `config.json`.

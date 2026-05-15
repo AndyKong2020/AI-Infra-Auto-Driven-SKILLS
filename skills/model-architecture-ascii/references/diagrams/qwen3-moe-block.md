@@ -23,13 +23,12 @@ source_basis:
 
 Values shown are for **Qwen3-235B-A22B**; smaller Qwen3 MoE variants share this `family_type` and topology with different scalar values.
 
-| Field          | Value              |
-|----------------|--------------------|
-| modality       | text               |
-| attention_type | gqa                |
-| ffn_type       | moe-routed         |
-| total_params   | 235B               |
-| active_params  | 22B (top-8 of 128) |
+| Field          | Value      |
+|----------------|------------|
+| modality       | text       |
+| attention_type | gqa        |
+| ffn_type       | moe-routed |
+| params         | 235BA22B   |
 
 ```mermaid
 flowchart TD
