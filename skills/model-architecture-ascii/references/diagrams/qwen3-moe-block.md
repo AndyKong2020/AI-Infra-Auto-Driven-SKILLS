@@ -56,15 +56,17 @@ flowchart TD
 
 Counts shown are for **Qwen3-235B-A22B**; for the smaller `Qwen3-30B-A3B` MoE the per-block rows scale by its `n_layers` instead of 94.
 
-| # | Module    | Type    | Count |
-|---|-----------|---------|-------|
-| 1 | Embed     | embed   | 1     |
-| 2 | RMSNorm   | norm    | 94    |
-| 3 | GQA Attn  | attn    | 94    |
-| 4 | RMSNorm   | norm    | 94    |
-| 5 | MoE FFN   | ffn-moe | 94    |
-| 6 | RMSNorm   | norm    | 1     |
-| 7 | LMHead    | head    | 1     |
+| # | Module    | Type    | Count | Detail |
+|---|-----------|---------|-------|--------|
+| 1 | Embed     | embed   | 1     | —      |
+| 2 | RMSNorm   | norm    | 94    | —      |
+| 3 | GQA Attn  | attn    | 94    | —      |
+| 4 | RMSNorm   | norm    | 94    | —      |
+| 5 | MoE FFN   | ffn-moe | 94    | —      |
+| 6 | RMSNorm   | norm    | 1     | —      |
+| 7 | LMHead    | head    | 1     | —      |
+
+No `Detail` link for row 5 — Qwen3 MoE is `ffn_type=moe-routed` (standard top-k with no shared expert), which does not auto-earn a detail diagram per `authoring-policy.md` § 3. Standard top-k MoE behaviour is implied by the type tag alone.
 
 ## Key parameters
 

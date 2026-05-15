@@ -53,15 +53,15 @@ flowchart TD
 
 ## Modules (in forward order)
 
-| # | Module    | Type    | Count |
-|---|-----------|---------|-------|
-| 1 | Embed     | embed   | 1     |
-| 2 | RMSNorm   | norm    | 32    |
-| 3 | GQA Attn  | attn    | 32    |
-| 4 | RMSNorm   | norm    | 32    |
-| 5 | MoE FFN   | ffn-moe | 32    |
-| 6 | RMSNorm   | norm    | 1     |
-| 7 | LMHead    | head    | 1     |
+| # | Module    | Type    | Count | Detail                |
+|---|-----------|---------|-------|-----------------------|
+| 1 | Embed     | embed   | 1     | —                     |
+| 2 | RMSNorm   | norm    | 32    | —                     |
+| 3 | GQA Attn  | attn    | 32    | —                     |
+| 4 | RMSNorm   | norm    | 32    | —                     |
+| 5 | MoE FFN   | ffn-moe | 32    | [[moe-shared-routed]] |
+| 6 | RMSNorm   | norm    | 1     | —                     |
+| 7 | LMHead    | head    | 1     | —                     |
 
 All 32 layers are MoE; no dense-FFN exception (unlike DeepSeek V3 family whose first 3 layers are dense).
 
@@ -85,7 +85,7 @@ All 32 layers are MoE; no dense-FFN exception (unlike DeepSeek V3 family whose f
 
 - `ffn_type=moe-shared+routed`: every layer's FFN is a shared-expert + routed-expert combination, with the shared expert always active. The per-token activated expert count is 9 (8 routed + 1 shared), reflected in `params=80BA13B` (80B total params, 13B activated per token).
 - All 32 layers use the same MoE block — there is no dense-FFN warm-up region. This is a structural difference vs DeepSeek V3 (which mixes dense FFN at layers 1–3 with MoE at layers 4–61).
-- For the shared + routed combine path (router gates, expert weighting, sum into single block output) see [[hunyuan-a13b-moe]].
+- For the shared + routed combine path (router gates, expert weighting, sum into single block output) see [[moe-shared-routed]] — Hunyuan-A13B uses **standard auxiliary-loss** balancing on that shared pattern; DeepSeek V3 family uses auxiliary-loss-free.
 - Cross-check: per-token total MoE FLOPs scale as 9 × per-expert FFN cost (not 65), because routed experts not in top-8 are skipped at inference.
 
 ## Source basis

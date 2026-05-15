@@ -110,16 +110,18 @@ Don't draw `Block × N` as a single rectangle with `× N` in the label — losin
 
 Fixed order. Block-level diagrams use all sections; module-detail diagrams omit `## Model summary` and `## Modules`.
 
-| # | Section | Block-level | Module-detail | What it carries |
+There are two file kinds. **Model files** (block-level diagrams) are per-model and carry concrete numerical values. **Module files** (structural-pattern diagrams) are model-agnostic — one file per structural pattern (`mla.md`, `moe-shared-routed.md`) shared across every model that uses it; numerical values stay symbolic.
+
+| # | Section | Model file | Module file | What it carries |
 |---|---|---|---|---|
-| 1 | Frontmatter (id, title, aliases, rank, `modality`, `attention_type`, `ffn_type`, source_basis) | ✓ | ✓ (no model-level tags) | Machine-readable metadata |
+| 1 | Frontmatter | id, title, aliases, rank, **`modality`, `attention_type`, `ffn_type`**, source_basis (image + config + modeling) | id, title, aliases, rank, source_basis (image + `reference_models` list of model ids that use this pattern) — **no model-level tags** | Machine-readable metadata |
 | 2 | Top-level heading `# <Title>` | ✓ | ✓ | — |
-| 3 | `## Model summary` table | ✓ | — | Model-level orthogonal tags + scale numbers (modality, attention_type, ffn_type, total_params, active_params) |
-| 4 | Mermaid `flowchart TD` block | ✓ | ✓ | The diagram itself, no narration before it |
-| 5 | `## Modules (in forward order)` table | ✓ | — | Per-module `type` tag + `Count` column = forward-pass instantiations |
-| 6 | `## Key parameters` table | ✓ | ✓ | Detailed numerical fields (lora ranks, head dims, intermediate sizes) |
-| 7 | `## Notes` | ✓ | ✓ | Quirks not in the graph: dense-vs-MoE ranges, KV cache shape, RoPE specifics, routing rules, cross-refs via `[[id]]` |
-| 8 | `## Source basis` | ✓ | ✓ | Pointers to reference image (if any), `config.json`, `modeling_*.py` |
+| 3 | `## Model summary` table | ✓ | — | Model-level orthogonal tags + `params` field (e.g. `671BA37B`) |
+| 4 | Mermaid `flowchart TD` block | ✓ (concrete shapes allowed: `Embed : V → 7168`) | ✓ (symbolic only: `cQ[c_Q]`, no `c_Q : 1536`) | The diagram itself |
+| 5 | `## Modules (in forward order)` table | ✓ (with `Detail` column → `[[module-id]]` or `—`) | — | Per-module decomposition |
+| 6 | `## Key parameters` table | ✓ — concrete values (`q_lora_rank: 1536`) | ✓ — field **names + descriptions only**, no values (`q_lora_rank: latent dim of c_Q`) | Detailed numerical fields |
+| 7 | `## Notes` | Per-model quirks + per-model variation of a shared module pattern | Pattern-level invariants + summary of known per-model variants | Anything not in the graph |
+| 8 | `## Source basis` | Reference image / config.json / modeling code for **this model** | Reference image(s) for the pattern + `reference_models` list | Provenance |
 
 ### `## Model summary` shape
 
@@ -151,19 +153,21 @@ Anything deployment-specific belongs to the downstream agent's overlay, not to t
 ### `## Modules` shape
 
 ```
-| # | Module    | Type    | Count |
-|---|-----------|---------|-------|
-| 1 | Embed     | embed   | 1     |
-| 2 | RMSNorm   | norm    | 61    |
-| 3 | MLA Attn  | attn    | 61    |
-| 4 | RMSNorm   | norm    | 61    |
-| 5 | MoE FFN   | ffn-moe | 58    |
-| 5*| Dense FFN | ffn-dense | 3   |
-| 6 | RMSNorm   | norm    | 1     |
-| 7 | LMHead    | head    | 1     |
+| #  | Module    | Type      | Count | Detail                |
+|----|-----------|-----------|-------|-----------------------|
+| 1  | Embed     | embed     | 1     | —                     |
+| 2  | RMSNorm   | norm      | 61    | —                     |
+| 3  | MLA Attn  | attn      | 61    | [[mla]]               |
+| 4  | RMSNorm   | norm      | 61    | —                     |
+| 5  | MoE FFN   | ffn-moe   | 58    | [[moe-shared-routed]] |
+| 5* | Dense FFN | ffn-dense | 3     | —                     |
+| 6  | RMSNorm   | norm      | 1     | —                     |
+| 7  | LMHead    | head      | 1     | —                     |
 ```
 
 Row order = forward-pass execution order. `Type` values come from the closed vocabulary in `authoring-policy.md` § 4a. `Count` is the number of times the module is instantiated across the whole forward pass (1 for one-shot model-boundary modules; `n_layers` for per-block modules; partials when a position alternates between implementations).
+
+`Detail` carries a wiki-style `[[module-id]]` link to the shared structural module file (`mla`, `moe-shared-routed`, …) for any module whose `type` has an auto-earn structural diagram per `authoring-policy.md` § 3. Use `—` for modules without a shared detail file (norm, embed, head, standard top-k MoE, vanilla GQA, …).
 
 When a position has alternating implementations (e.g. dense FFN at layers 1–3, MoE FFN at layers 4–61), write them as `5` and `5*` rows; below the table, note the position-to-layer mapping in one prose line.
 
