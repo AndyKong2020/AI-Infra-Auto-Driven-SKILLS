@@ -61,7 +61,8 @@ The matrix below is the operational rule. When authoring a new model, list the m
 
 | Module | Why it earns a detail diagram |
 |---|---|
-| **MLA (Multi-head Latent Attention)** | 3+ branch fan-out (`c_Q`, `c_KV`, `k_rope_pre`), sub-dim RoPE injection, KV-cache compression. Verified models: DeepSeek V3, V3.2-Exp, R1. |
+| **MLA (Multi-head Latent Attention)** | 3+ branch fan-out (`c_Q`, `c_KV`, `k_rope_pre`), sub-dim RoPE injection, KV-cache compression. Verified models: DeepSeek V3, V3.2-Exp (DSA wraps MLA), R1. |
+| **DSA (DeepSeek Sparse Attention)** | MLA's Q/K/V graph wrapped with a parallel **lightning indexer** that produces a per-query top-k token mask added to the attention scores pre-softmax. The indexer is structurally distinct from MLA (own Q/K projections from `c_Q` / `x`, LayerNorm on K, per-head weights from `x`, FP8 K-cache) and not visible inside the MLA diagram. Verified models: DeepSeek V3.2-Exp. |
 | **Shared + routed parallel MoE** | Routed top-k experts and 1+ shared experts feed back in parallel — different computation graph from vanilla top-k. Verified models: DeepSeek V3, V3.2-Exp, R1; Hunyuan-A13B. |
 | **Cross-modal fusion (VLM)** | How vision tokens enter the LLM (early fusion / late fusion / cross-attention) is the entire structural identity of a VLM. Qwen3-VL, Kimi-VL. |
 | **Hybrid attention** | Multiple parallel attention paths in one block (e.g. linear + softmax, attn + state-space). MiniMax-style hybrids if/when present, Jamba-style hybrids. |
@@ -100,7 +101,7 @@ The matrix below is the operational rule. When authoring a new model, list the m
 | # | Family | Sibling entries | This skill status |
 |---|---|---|---|
 | 1 | DeepSeek V3 (+ R1) | architecture, MLA-MHA, MLA-MQA | ✅ authored — `deepseek-v3-architecture` + shared `mla.md`, `moe-shared-routed.md` |
-| 2 | DeepSeek V3.2-Exp | architecture, DSA-MQA, DSA-MHA | ⚠️ gap — needs custom-inference-code read to author DSA + MTP module files |
+| 2 | DeepSeek V3.2-Exp | architecture, DSA-MQA, DSA-MHA | ✅ authored — `deepseek-v3-2-exp-architecture` + new shared `dsa.md` (DSA = MLA + lightning indexer; the indexer is instantiated as `MLA.indexer` and called inside `MLA.forward` in `inference/model.py`); reuses shared `moe-shared-routed.md`. MTP is configured (`num_nextn_predict_layers=1`) but **not realized** in the bundled inference code — no `mtp.md` per § 1a |
 | 3 | DeepSeek V4 | architecture | ⚠️ verify — sibling has the image; HF config availability unknown; treat as gap until config is fetched and verified per § 1a |
 | 4 | GLM-5 | architecture | ⏳ todo |
 | 5 | Kimi K2 | architecture | ✅ authored — `kimi-k2-architecture` reuses shared `mla.md` + `moe-shared-routed.md` (Kimi K2 reuses `DeepseekV3ForCausalLM` with `model_type=kimi_k2`) |
@@ -155,6 +156,7 @@ Three of the four tag spaces are **model-level orthogonal axes** (used in frontm
 | `gqa` | Grouped-query attention. |
 | `mqa` | Multi-query attention. |
 | `mla` | Multi-head latent attention (DeepSeek family). |
+| `dsa` | DeepSeek Sparse Attention — MLA's Q/K/V LoRA graph wrapped by a lightning indexer that emits a per-query top-k token mask (added to the attention scores pre-softmax). Verified at DeepSeek V3.2-Exp (HF `model_type=deepseek_v32`, class `DeepseekV32ForCausalLM`, indexer instantiated as `MLA.indexer` in `inference/model.py`). Strictly stronger than `mla`: do not collapse a DSA model onto `mla`, and the model's `## Modules` row for the attention block uses `[[dsa]]` (not `[[mla]]`) as the Detail link. |
 | `linear-attn` | Linear / kernel attention (Performer, LinAttn, etc.). |
 | `mamba` | State-space model (Mamba family) used in place of attention. |
 | `hybrid-{a}+{b}` | Concrete hybrid composition, e.g. `hybrid-mla+linear-attn`. Use only when more than one attention type is interleaved across layers. |
