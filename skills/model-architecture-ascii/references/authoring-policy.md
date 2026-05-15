@@ -104,7 +104,7 @@ The matrix below is the operational rule. When authoring a new model, list the m
 | 3 | DeepSeek V4 | architecture | ⚠️ verify — sibling has the image; HF config availability unknown; treat as gap until config is fetched and verified per § 1a |
 | 4 | GLM-5 | architecture | ⏳ todo |
 | 5 | Kimi K2 | architecture | ✅ authored — `kimi-k2-architecture` reuses shared `mla.md` + `moe-shared-routed.md` (Kimi K2 reuses `DeepseekV3ForCausalLM` with `model_type=kimi_k2`) |
-| 6 | Kimi K2.5 | architecture | ⏳ todo |
+| 6 | Kimi K2.5 | architecture | ✅ authored — `kimi-k2-5-architecture` reuses shared `mla.md` + `moe-shared-routed.md`; adds MoonViT-3D vision tower + PatchMergerMLP projector (no DeepStack), described inline in Notes |
 | 7 | MiniMax M2 | architecture, MLP, expert-routing | ⏳ todo — may trigger `attention_type` vocabulary extension (linear-attn / hybrid-*) |
 | 8 | MiniMax M2.5 | architecture | ⏳ todo |
 | 9 | Qwen3 dense | model-structure | ✅ authored — `qwen3-dense-architecture` |

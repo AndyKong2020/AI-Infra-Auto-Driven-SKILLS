@@ -13,12 +13,13 @@ source_basis:
   reference_models:
     - deepseek-v3-architecture
     - kimi-k2-architecture
+    - kimi-k2-5-architecture
     - kimi-vl-a3b-architecture
 ---
 
 # Multi-head Latent Attention (MLA) — structural pattern
 
-> Model-agnostic structural diagram. Verified to apply to: DeepSeek V3, DeepSeek R1 (R1 reuses V3's architecture class), Kimi K2 (reuses `DeepseekV3ForCausalLM` with `model_type=kimi_k2`), Kimi-VL-A3B-Instruct (text backbone reuses `DeepseekV3ForCausalLM`; `q_lora_rank=null` collapses the `c_Q` branch to a plain Q projection but all other branches remain). Any future model with `attention_type=mla` reuses this file provided topology matches; structurally distinct variants get a new module file with a structure-based id (e.g. `mla-<distinction>.md`), never a model-prefixed one. Numerical shapes live in each model's own `## Key parameters` table — they are not baked into this diagram.
+> Model-agnostic structural diagram. Verified to apply to: DeepSeek V3, DeepSeek R1 (R1 reuses V3's architecture class), Kimi K2 (reuses `DeepseekV3ForCausalLM` with `model_type=kimi_k2`), Kimi K2.5 (text backbone reuses `DeepseekV3ForCausalLM` inside the `KimiK25ForConditionalGeneration` wrapper; same MLA hyperparameters as Kimi K2), Kimi-VL-A3B-Instruct (text backbone reuses `DeepseekV3ForCausalLM`; `q_lora_rank=null` collapses the `c_Q` branch to a plain Q projection but all other branches remain). Any future model with `attention_type=mla` reuses this file provided topology matches; structurally distinct variants get a new module file with a structure-based id (e.g. `mla-<distinction>.md`), never a model-prefixed one. Numerical shapes live in each model's own `## Key parameters` table — they are not baked into this diagram.
 >
 > **Not covered**: DeepSeek V3.2-Exp uses DSA (DeepSeek Sparse Attention) per the official model card. The card describes DSA and MLA as **coexisting components** in V3.2 (explicit references to "RoPE in the indexer module" and "RoPE in the MLA module" as separate parts of the architecture); the exact composition order in the forward pass is not stated publicly, and V3.2 ships custom inference code rather than a standard HF `modeling_*.py`. Until V3.2's forward is verified against that code, this file does not list V3.2-Exp as a reference model — applying this MLA-only diagram to V3.2 would be incorrect because V3.2 also has a DSA indexer module that this diagram does not show.
 
