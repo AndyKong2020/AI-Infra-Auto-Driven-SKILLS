@@ -14,7 +14,7 @@ attention_type: gqa
 ffn_type: moe-shared+routed
 source_basis:
   image: model-architecture-diagram :: hunyuan-a13b-architecture (self-llm models/Hunyuan-A13B-Instruct/images/01-01-Hunyuan-A13B-architecture.jpg)
-  config: tencent/Hunyuan-A13B-Instruct/config.json
+  config: tencent/Hunyuan-A13B-Instruct/config.json (verified 2026-05-14)
   modeling: tencent/Hunyuan-A13B-Instruct (architecture HunYuanMoEV1ForCausalLM, model_type hunyuan_v1_moe)
 ---
 

@@ -13,8 +13,8 @@ attention_type: gqa
 ffn_type: moe-routed
 source_basis:
   image: model-architecture-diagram :: qwen3-moe (self-llm models/Qwen3/images/01-02.png)
-  config: Qwen/Qwen3-235B-A22B/config.json
-  modeling: Qwen/Qwen3-235B-A22B/modeling_qwen3_moe.py
+  config: Qwen/Qwen3-235B-A22B/config.json (verified 2026-05-14)
+  modeling: Qwen/Qwen3-235B-A22B (architecture Qwen3MoeForCausalLM, model_type qwen3_moe)
 ---
 
 # Qwen3 MoE block

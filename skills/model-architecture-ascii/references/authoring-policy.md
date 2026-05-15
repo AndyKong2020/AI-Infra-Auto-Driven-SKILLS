@@ -33,6 +33,18 @@ When the original image leaves a path implicit but the path is important for an 
 
 When the model has no reference image (yet) in the sibling skill, the diagram is synthesised from `config.json` + `modeling_*.py` alone. Set `source_basis.image` to `null` and explain in `note`.
 
+### 1a. Verified-only hard rule
+
+Authoring a model entry without first fetching and reading its actual `config.json` is forbidden — that is precisely how speculative claims (e.g. an unverified V3.2 architecture aliased onto a V3 diagram) entered an early MVP and almost survived into the canonical prior.
+
+Hard requirements per model `.md` file:
+
+- `source_basis.config` MUST cite the literal HF config path and carry a `(verified YYYY-MM-DD)` date marking when its values were fetched. Example: `Qwen/Qwen3-235B-A22B/config.json (verified 2026-05-14)`.
+- `source_basis.modeling` MUST cite either the literal HF modeling file path or the verified `architectures` + `model_type` strings from the config. Memory of the model name is not acceptable.
+- Every numerical value in `## Model summary`, `## Modules` `Count` column, and `## Key parameters` MUST be derivable from the fetched config; values from memory / pattern-matching / "should be same as the other one" are not allowed.
+- If the model bundles **custom inference code** instead of a standard HF `modeling_*.py` (as with DeepSeek V3.2-Exp), the author must read that custom code before claiming any forward-pass topology. Until then the model is a **known gap**, documented in this policy's § 4 in-scope table and in cross-referencing files' Notes — never authored speculatively.
+- A new module file (e.g. a hypothetical `dsa.md`) is subject to the same rule: its structural claims must be traceable to either a published paper or actual modeling/inference code, never extrapolated.
+
 ## 2. How many diagrams per model
 
 **Baseline: 1 diagram per model**, always. The block-level outer view (Embed → blocks → norm → LMHead). Even a fully-standard transformer earns this baseline diagram so the skill is uniformly addressable by model name.
@@ -152,14 +164,22 @@ When a module behaves as more than one of these (rare), pick the *dominant* comp
 
 ## 5. Authoring playbook (per new model)
 
-1. **Identify modules used.** Read `config.json` and skim `modeling_*.py` (`<Model>DecoderLayer.forward`, attention class, FFN/MoE class, any head module).
-2. **Look up each module in section 3.** For each "auto-earn" module hit, check whether the matching **structural module file** already exists in `references/diagrams/` (`mla.md`, `moe-shared-routed.md`, …). If it does, reuse it via cross-link — do **not** create a per-model copy. If a structurally distinct variant is required, create a new module file with a structure-based id describing the distinction (e.g. `mla-<distinction>.md` where `<distinction>` names what differs structurally), never a model version like `mla-v4.md`.
-3. **Pick the model's three model-level tags** — `modality`, `attention_type`, `ffn_type` — from section 4a's closed vocabularies. Each axis is independent; do not encode them into a single combined tag.
-4. **Write the model's block-level `.md` file** per `mermaid-style-guide.md`'s file-structure rule (frontmatter, top heading, Model summary, Mermaid, Modules table with Detail column, Key parameters with **concrete values**, Notes, Source basis).
-5. **In `## Modules`**, every row carries a closed-vocabulary `type` tag from section 4a; the `Count` column is the number of times the module is instantiated in the full forward pass (1 for one-shot modules at model boundaries, `n_layers` for per-block modules); the `Detail` column carries a `[[module-id]]` link for modules whose `type` has an auto-earn structural diagram (currently `mla`, `moe-shared-routed`) and `—` otherwise. When a position alternates between two implementations (e.g. dense FFN for layers 1–3 + MoE FFN for the rest), list both as separate rows and note the position-to-layer mapping below the table.
-6. **Per-model variations of a shared module structure** (e.g. DeepSeek uses aux-loss-free balancing on `moe-shared-routed`; Hunyuan uses standard aux-loss balancing on the same structure) go in this *model* file's `## Notes`, not in the shared module file.
-7. **If creating a new structural module file**, write it model-agnostic: Mermaid uses symbolic node names (no specific numerical shapes); `## Key parameters` lists field *names* + descriptions, not values; `## Notes` describes the pattern's invariants and known per-model variants; `## Source basis` references one or more `model-architecture-diagram` images plus the list of models that share the pattern (`source_basis.reference_models`).
-8. **Self-check (once resolver is implemented)**: resolver matches the model by all expected aliases; ids match filenames; no id collisions; every `modality` / `attention_type` / `ffn_type` / `type` value is in the closed vocabulary; every Modules `Detail` link resolves to an existing file.
+1. **Fetch & verify.** Pull the model's `config.json` (HF `raw/main/config.json` URL) and either its `modeling_*.py` or — for custom-code models — its bundled inference code. Record the fetch date; this is the timestamp that lands in `source_basis` per § 1a. If you cannot fetch / read either, **stop**: the model is a known gap, not a candidate for authoring this round.
+
+2. **Identify modules used.** Read `config.json` and skim `modeling_*.py` (`<Model>DecoderLayer.forward`, attention class, FFN/MoE class, any head module).
+3. **Look up each module in section 3.** For each "auto-earn" module hit, check whether the matching **structural module file** already exists in `references/diagrams/` (`mla.md`, `moe-shared-routed.md`, …). If it does, reuse it via cross-link — do **not** create a per-model copy. If a structurally distinct variant is required, create a new module file with a structure-based id describing the distinction (e.g. `mla-<distinction>.md` where `<distinction>` names what differs structurally), never a model version like `mla-v4.md`.
+4. **Pick the model's three model-level tags** — `modality`, `attention_type`, `ffn_type` — from section 4a's closed vocabularies. Each axis is independent; do not encode them into a single combined tag.
+5. **Write the model's block-level `.md` file** per `mermaid-style-guide.md`'s file-structure rule (frontmatter, top heading, Model summary, Mermaid, Modules table with Detail column, Key parameters with **concrete values**, Notes, Source basis).
+6. **In `## Modules`**, every row carries a closed-vocabulary `type` tag from section 4a; the `Count` column is the number of times the module is instantiated in the full forward pass (1 for one-shot modules at model boundaries, `n_layers` for per-block modules); the `Detail` column carries a `[[module-id]]` link for modules whose `type` has an auto-earn structural diagram (currently `mla`, `moe-shared-routed`) and `—` otherwise. When a position alternates between two implementations (e.g. dense FFN for layers 1–3 + MoE FFN for the rest), list both as separate rows and note the position-to-layer mapping below the table.
+7. **Per-model variations of a shared module structure** (e.g. DeepSeek uses aux-loss-free balancing on `moe-shared-routed`; Hunyuan uses standard aux-loss balancing on the same structure) go in this *model* file's `## Notes`, not in the shared module file.
+8. **If creating a new structural module file**, write it model-agnostic: Mermaid uses symbolic node names (no specific numerical shapes); `## Key parameters` lists field *names* + descriptions, not values; `## Notes` describes the pattern's invariants and known per-model variants; `## Source basis` references one or more `model-architecture-diagram` images plus the list of models that share the pattern (`source_basis.reference_models`).
+9. **Self-check before submission**:
+   - `source_basis.config` ends with `(verified YYYY-MM-DD)`. Without this, the file is not authored — it is a draft.
+   - Every numerical claim is derivable from the verified config; nothing comes from memory or analogy with a different model.
+   - ids match filenames; no id collisions.
+   - Every `modality` / `attention_type` / `ffn_type` / `type` value is in the closed vocabulary.
+   - Every Modules `Detail` link resolves to an existing file in `references/diagrams/`.
+   - (Once resolver is implemented) the resolver matches the model by all expected aliases.
 
 ## 6. Extending this policy
 
