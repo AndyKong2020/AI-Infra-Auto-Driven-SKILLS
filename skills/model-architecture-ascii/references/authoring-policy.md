@@ -62,7 +62,7 @@ The matrix below is the operational rule. When authoring a new model, list the m
 | Module | Why it earns a detail diagram |
 |---|---|
 | **MLA (Multi-head Latent Attention)** | 3+ branch fan-out (`c_Q`, `c_KV`, `k_rope_pre`), sub-dim RoPE injection, KV-cache compression. Verified models: DeepSeek V3, V3.2-Exp (DSA wraps MLA), R1. |
-| **DSA (DeepSeek Sparse Attention)** | MLA's Q/K/V graph wrapped with a parallel **lightning indexer** that produces a per-query top-k token mask added to the attention scores pre-softmax. The indexer is structurally distinct from MLA (own Q/K projections from `c_Q` / `x`, LayerNorm on K, per-head weights from `x`, FP8 K-cache) and not visible inside the MLA diagram. Verified models: DeepSeek V3.2-Exp. |
+| **DSA (DeepSeek Sparse Attention)** | MLA's Q/K/V graph wrapped with a parallel **lightning indexer** that produces a per-query top-k token mask added to the attention scores pre-softmax. The indexer is structurally distinct from MLA (own Q/K projections from `c_Q` / `x`, LayerNorm on K, per-head weights from `x`, FP8 K-cache) and not visible inside the MLA diagram. Verified models: DeepSeek V3.2-Exp (custom `inference/model.py`), GLM-5 (HF transformers `modeling_glm_moe_dsa.py`). |
 | **Shared + routed parallel MoE** | Routed top-k experts and 1+ shared experts feed back in parallel — different computation graph from vanilla top-k. Verified models: DeepSeek V3, V3.2-Exp, R1; Hunyuan-A13B. |
 | **Cross-modal fusion (VLM)** | How vision tokens enter the LLM (early fusion / late fusion / cross-attention) is the entire structural identity of a VLM. Qwen3-VL, Kimi-VL. |
 | **Hybrid attention** | Multiple parallel attention paths in one block (e.g. linear + softmax, attn + state-space). MiniMax-style hybrids if/when present, Jamba-style hybrids. |
@@ -102,20 +102,20 @@ The matrix below is the operational rule. When authoring a new model, list the m
 |---|---|---|---|
 | 1 | DeepSeek V3 (+ R1) | architecture, MLA-MHA, MLA-MQA | ✅ authored — `deepseek-v3-architecture` + shared `mla.md`, `moe-shared-routed.md` |
 | 2 | DeepSeek V3.2-Exp | architecture, DSA-MQA, DSA-MHA | ✅ authored — `deepseek-v3-2-exp-architecture` + new shared `dsa.md` (DSA = MLA + lightning indexer; the indexer is instantiated as `MLA.indexer` and called inside `MLA.forward` in `inference/model.py`); reuses shared `moe-shared-routed.md`. MTP is configured (`num_nextn_predict_layers=1`) but **not realized** in the bundled inference code — no `mtp.md` per § 1a |
-| 3 | DeepSeek V4 | architecture | ⚠️ verify — sibling has the image; HF config availability unknown; treat as gap until config is fetched and verified per § 1a |
-| 4 | GLM-5 | architecture | ⏳ todo |
+| 3 | DeepSeek V4 | architecture | ✅ authored — `deepseek-v4-architecture` covers V4-Pro (1.6TA49B) + V4-Flash (284BA13B); both share `model_type=deepseek_v4`, `DeepseekV4ForCausalLM`, verified 2026-05-15 against both configs + bundled `inference/model.py`. Reuses `[[moe-shared-routed]]` only — `mla.md` is **not** reused (V4 adds CSA compression + grouped O-LoRA + manifold-constrained Hyper-Connections not covered by V3's MLA module file); authoring an `mla-csa.md` / `mhc.md` is left as § 6 follow-up |
+| 4 | GLM-5 | architecture | ✅ authored — `glm-5-architecture` (`attention_type=dsa`, verified against `transformers/main` `modeling_glm_moe_dsa.py`) reuses `[[dsa]]` + `[[moe-shared-routed]]` |
 | 5 | Kimi K2 | architecture | ✅ authored — `kimi-k2-architecture` reuses shared `mla.md` + `moe-shared-routed.md` (Kimi K2 reuses `DeepseekV3ForCausalLM` with `model_type=kimi_k2`) |
 | 6 | Kimi K2.5 | architecture | ✅ authored — `kimi-k2-5-architecture` reuses shared `mla.md` + `moe-shared-routed.md`; adds MoonViT-3D vision tower + PatchMergerMLP projector (no DeepStack), described inline in Notes |
-| 7 | MiniMax M2 | architecture, MLP, expert-routing | ⏳ todo — may trigger `attention_type` vocabulary extension (linear-attn / hybrid-*) |
-| 8 | MiniMax M2.5 | architecture | ⏳ todo |
+| 7 | MiniMax M2 | architecture, MLP, expert-routing | ✅ authored — `minimax-m2-architecture` (standard softmax GQA + `moe-routed`, no shared expert, no hybrid attention; `attn_type_list=[1]×62` is uniform softmax — no vocab extension needed) |
+| 8 | MiniMax M2.5 | architecture | ✅ authored — `minimax-m2-5-architecture` (RL-refined post-train of M2 backbone; identical topology to M2, scalar drift only) |
 | 9 | Qwen3 dense | model-structure | ✅ authored — `qwen3-dense-architecture` |
 | 10 | Qwen3 MoE | MoE structure, shared-expert comparison | ✅ authored — `qwen3-moe-block` |
 | 11 | Qwen3.5 dense | 27B dense architecture | ✅ authored — `qwen3-5-dense-architecture` (hybrid-attn + VLM + MTP — only `ffn_type` differs from `qwen3-5-moe-architecture`) |
-| 12 | Qwen3.5 MoE | 397B-A17B architecture | ⏳ todo |
+| 12 | Qwen3.5 MoE | 397B-A17B architecture | ✅ authored — `qwen3-5-moe-architecture` (multimodal + hybrid linear-attn + GQA, MoE 512 routed + 1 shared top-10; verified against HF config — diverges substantially from the Qwen3-235B-A22B predecessor) |
 | 13 | Qwen3-VL 32B | 32B architecture | ✅ authored — `qwen3-vl-32b-architecture` + shared `deepstack.md` |
-| 14 | Qwen3-VL 235B-A22B | 235B-A22B architecture, DeepStack feat extraction, visual injection | ⏳ todo — reuses `deepstack.md` and likely `moe-shared-routed.md` from MoE backbone |
+| 14 | Qwen3-VL 235B-A22B | 235B-A22B architecture, DeepStack feat extraction, visual injection | ✅ authored — `qwen3-vl-235b-a22b-architecture` reuses `[[deepstack]]`; text backbone is `moe-routed` (no shared expert, so structural sibling is `qwen3-moe-block`, not `moe-shared-routed`) |
 | 15 | Step 3.5 Flash | architecture | ✅ authored — `step-3-5-flash-architecture` reuses shared `moe-shared-routed.md`; mixed dense (layers 0–2) + MoE (3–44); per-layer full/sliding GQA + MTP-3 covered in Notes |
-| 16 | Llama 4 | MoE shared expert | ⏳ todo — sibling only has one image, may need additional config-driven content |
+| 16 | Llama 4 | MoE shared expert | ✅ authored — `llama-4-scout-architecture` (text+vision, GQA + NoPE-every-4th, MoE 16 routed + 1 shared top-1 sigmoid) reuses `[[moe-shared-routed]]`. Maverick / Behemoth siblings tracked in Notes |
 | 17 | Hunyuan-A13B | architecture, shared-routed | ✅ authored — `hunyuan-a13b-architecture` + shared `moe-shared-routed.md` |
 | 18 | Kimi-VL | architecture, training-flow | ✅ authored — `kimi-vl-a3b-architecture` reuses shared `mla.md` + `moe-shared-routed.md`; fusion is an MLP projector (no DeepStack), described inline in Notes (too trivial for its own module file) |
 
@@ -156,7 +156,7 @@ Three of the four tag spaces are **model-level orthogonal axes** (used in frontm
 | `gqa` | Grouped-query attention. |
 | `mqa` | Multi-query attention. |
 | `mla` | Multi-head latent attention (DeepSeek family). |
-| `dsa` | DeepSeek Sparse Attention — MLA's Q/K/V LoRA graph wrapped by a lightning indexer that emits a per-query top-k token mask (added to the attention scores pre-softmax). Verified at DeepSeek V3.2-Exp (HF `model_type=deepseek_v32`, class `DeepseekV32ForCausalLM`, indexer instantiated as `MLA.indexer` in `inference/model.py`). Strictly stronger than `mla`: do not collapse a DSA model onto `mla`, and the model's `## Modules` row for the attention block uses `[[dsa]]` (not `[[mla]]`) as the Detail link. |
+| `dsa` | DeepSeek Sparse Attention — MLA's Q/K/V LoRA graph wrapped by a lightning indexer that emits a per-query top-k token mask (added to the attention scores pre-softmax). Verified at DeepSeek V3.2-Exp (HF `model_type=deepseek_v32`, class `DeepseekV32ForCausalLM`, indexer instantiated as `MLA.indexer` in `inference/model.py`) and at GLM-5 (HF `model_type=glm_moe_dsa`, class `GlmMoeDsaForCausalLM`, indexer instantiated as `GlmMoeDsaIndexer` inside `GlmMoeDsaAttention` in `transformers/main` `modeling_glm_moe_dsa.py`). Strictly stronger than `mla`: do not collapse a DSA model onto `mla`, and the model's `## Modules` row for the attention block uses `[[dsa]]` (not `[[mla]]`) as the Detail link. |
 | `linear-attn` | Linear / kernel attention (Performer, LinAttn, etc.). |
 | `mamba` | State-space model (Mamba family) used in place of attention. |
 | `hybrid-{a}+{b}` | Concrete hybrid composition, e.g. `hybrid-mla+linear-attn`. Use only when more than one attention type is interleaved across layers. |

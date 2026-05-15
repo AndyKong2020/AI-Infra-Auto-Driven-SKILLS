@@ -11,11 +11,12 @@ source_basis:
   image: model-architecture-diagram :: deepseek-v3-2-exp-dsa-mha + deepseek-v3-2-exp-dsa-mqa (InfraTech V3.2-Exp DSA images)
   reference_models:
     - deepseek-v3-2-exp-architecture
+    - glm-5-architecture
 ---
 
 # DeepSeek Sparse Attention (DSA) — structural pattern
 
-> Model-agnostic structural diagram. Verified to apply to: DeepSeek V3.2-Exp (`DeepseekV32ForCausalLM`, `model_type=deepseek_v32`; the `MLA` class in the bundled `inference/model.py` instantiates `self.indexer = Indexer(args)` and calls it from inside `MLA.forward`). Any future model whose attention class wraps an MLA-shaped Q/K/V graph with a learned indexer that emits a per-query top-k token mask reuses this file; per-model variation (rotation tricks, FP8 layout, indexer head count) goes in the model's own Notes. Numerical shapes (e.g. `index_n_heads=64`, `index_head_dim=128`, `index_topk=2048`) live in each model's `## Key parameters`, never here.
+> Model-agnostic structural diagram. Verified to apply to: DeepSeek V3.2-Exp (`DeepseekV32ForCausalLM`, `model_type=deepseek_v32`; the `MLA` class in the bundled `inference/model.py` instantiates `self.indexer = Indexer(args)` and calls it from inside `MLA.forward`) and GLM-5 (`GlmMoeDsaForCausalLM`, `model_type=glm_moe_dsa`; `GlmMoeDsaAttention` contains `GlmMoeDsaIndexer` whose top-k indices form an additive `-inf` mask applied pre-softmax — verified against `transformers/main` `modeling_glm_moe_dsa.py`). Any future model whose attention class wraps an MLA-shaped Q/K/V graph with a learned indexer that emits a per-query top-k token mask reuses this file; per-model variation (rotation tricks, FP8 layout, indexer head count) goes in the model's own Notes. Numerical shapes (e.g. `index_n_heads=64`, `index_head_dim=128`, `index_topk=2048`) live in each model's `## Key parameters`, never here.
 >
 > **Relationship to MLA**: DSA is **MLA + indexer overlay**, not a replacement. The MLA Q / K / V projections, NoPE/RoPE split, `c_KV` cache, and softmax kernel are unchanged from [[mla]]. The indexer runs in parallel on the same `x` (and the same `c_Q`-equivalent intermediate `qr`) and produces an additive mask that zeros every non-top-k position before softmax. A model with `attention_type=dsa` therefore implicitly carries the full MLA forward graph — readers needing the inner MLA detail follow `[[mla]]` separately.
 

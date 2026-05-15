@@ -18,7 +18,7 @@ source_basis:
   modeling: huggingface/transformers src/transformers/models/qwen3_vl/modeling_qwen3_vl.py (architecture Qwen3VLForConditionalGeneration, model_type qwen3_vl); inspected 2026-05-15 for the DeepStack injection mechanism
   note: |
     Text backbone is structurally identical to Qwen3-32B dense (same n_layers=64, hidden=5120, GQA 64+8, intermediate=25600, vocab=151936) but with `model_type=qwen3_vl_text` and Interleaved-MRoPE (rope_scaling.mrope_interleaved=true, mrope_section [24,20,20]) plus extended max_position_embeddings=262144.
-    Qwen3-VL 235B-A22B uses an MoE text backbone and is a separate entry to be authored against its own config.
+    Qwen3-VL 235B-A22B uses an MoE text backbone and is authored in `qwen3-vl-235b-a22b-architecture.md` against its own config.
 ---
 
 # Qwen3-VL 32B architecture (block-level)
@@ -135,7 +135,7 @@ V-prefixed rows run on the vision side **before** the LLM block loop begins; the
 - **DeepStack injects multi-level ViT features into the first 3 LLM layers** via element-wise addition at image-token positions. See [[deepstack]] for the verified forward-pass detail and per-step Mermaid. The injection is a position-masked add, not a concatenation or cross-attention.
 - **Interleaved MRoPE** (`rope_scaling.mrope_interleaved=true`, `mrope_section=[24, 20, 20]`) allocates rotary frequencies across time, height, width — enabling unified position encoding for text + image + video tokens. This is a Qwen3-VL design choice on top of the otherwise-Qwen3-32B-equivalent text backbone.
 - **`max_position=262144`** is the stock long-context size used by the family. Deployment may further extend via YARN-style scaling; that is not captured here.
-- **Sibling MoE variant**: Qwen3-VL 235B-A22B uses an MoE text backbone (Qwen3-235B-A22B style) plus the same DeepStack mechanism. It is a separate model file (not yet authored) and requires its own config fetch + verification.
+- **Sibling MoE variant**: [[qwen3-vl-235b-a22b-architecture]] uses an MoE text backbone (Qwen3-235B-A22B style, top-8 of 128 routed experts, no shared expert) plus the same DeepStack mechanism on the same vision encoder.
 
 ## Source basis
 

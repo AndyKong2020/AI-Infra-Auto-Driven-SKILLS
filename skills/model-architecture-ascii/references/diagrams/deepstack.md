@@ -15,13 +15,14 @@ source_basis:
   modeling: huggingface/transformers src/transformers/models/qwen3_vl/modeling_qwen3_vl.py (verified 2026-05-15; see Qwen3VLVisionModel.forward and Qwen3VLTextModel._deepstack_process)
   reference_models:
     - qwen3-vl-32b-architecture
+    - qwen3-vl-235b-a22b-architecture
   note: |
     DeepStack is named after the published technique (Meng et al., "DeepStack: Deeply Stacking Visual Tokens..."). This file describes the structural pattern as adopted in Qwen3-VL; any other model that adopts the same multi-level ViT-feature → first-N-LLM-layers add-at-image-positions pattern reuses this file.
 ---
 
 # DeepStack multi-level visual feature injection — structural pattern
 
-> Model-agnostic structural diagram for the DeepStack pattern: multiple intermediate features pulled from a ViT, then added (element-wise) to the LLM's hidden state at image-token positions across the first several LLM layers. Numerical specifics (which ViT layers, how many injection points, hidden dims) live in each consuming model's own file. Verified to apply to: Qwen3-VL-32B (per HF transformers `modeling_qwen3_vl.py`).
+> Model-agnostic structural diagram for the DeepStack pattern: multiple intermediate features pulled from a ViT, then added (element-wise) to the LLM's hidden state at image-token positions across the first several LLM layers. Numerical specifics (which ViT layers, how many injection points, hidden dims) live in each consuming model's own file. Verified to apply to: Qwen3-VL-32B (per HF transformers `modeling_qwen3_vl.py`) and Qwen3-VL-235B-A22B (per HF transformers `modeling_qwen3_vl_moe.py`, same `_deepstack_process` mechanism in `Qwen3VLMoeTextModel`).
 
 ```mermaid
 flowchart TD
