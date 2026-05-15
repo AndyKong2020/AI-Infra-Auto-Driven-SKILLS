@@ -109,7 +109,7 @@ The matrix below is the operational rule. When authoring a new model, list the m
 | 8 | MiniMax M2.5 | architecture | ⏳ todo |
 | 9 | Qwen3 dense | model-structure | ✅ authored — `qwen3-dense-architecture` |
 | 10 | Qwen3 MoE | MoE structure, shared-expert comparison | ✅ authored — `qwen3-moe-block` |
-| 11 | Qwen3.5 dense | 27B dense architecture | ⏳ todo |
+| 11 | Qwen3.5 dense | 27B dense architecture | ✅ authored — `qwen3-5-dense-architecture` (hybrid-attn + VLM + MTP — only `ffn_type` differs from `qwen3-5-moe-architecture`) |
 | 12 | Qwen3.5 MoE | 397B-A17B architecture | ⏳ todo |
 | 13 | Qwen3-VL 32B | 32B architecture | ✅ authored — `qwen3-vl-32b-architecture` + shared `deepstack.md` |
 | 14 | Qwen3-VL 235B-A22B | 235B-A22B architecture, DeepStack feat extraction, visual injection | ⏳ todo — reuses `deepstack.md` and likely `moe-shared-routed.md` from MoE backbone |
