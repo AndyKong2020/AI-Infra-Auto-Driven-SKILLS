@@ -17,7 +17,7 @@ source_basis:
 
 # Shared + Routed MoE FFN — structural pattern
 
-> Model-agnostic structural diagram. Used by every model whose `ffn_type=moe-shared+routed` (DeepSeek V3 family, Hunyuan-A13B, and any structurally identical successor). Per-model numerical values (top-k, n_routed, n_shared, per-expert intermediate dim) live in each model's own `## Key parameters` table.
+> Model-agnostic structural diagram. Verified to apply to: DeepSeek V3, DeepSeek V3.2-Exp, DeepSeek R1, Hunyuan-A13B-Instruct. Any future model with `ffn_type=moe-shared+routed` reuses this file provided the topology matches; per-model variation (e.g. router balancing strategy) goes in the model's own Notes. Per-model numerical values (top-k, n_routed, n_shared, per-expert intermediate dim) live in each model's own `## Key parameters` table.
 
 ```mermaid
 flowchart TD

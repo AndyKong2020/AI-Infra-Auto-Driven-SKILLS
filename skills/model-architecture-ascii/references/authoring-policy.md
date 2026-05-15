@@ -49,11 +49,11 @@ The matrix below is the operational rule. When authoring a new model, list the m
 
 | Module | Why it earns a detail diagram |
 |---|---|
-| **MLA (Multi-head Latent Attention)** | 3+ branch fan-out (`c_Q`, `c_KV`, `k_rope_pre`), sub-dim RoPE injection, KV-cache compression. DeepSeek family. |
-| **Shared + routed parallel MoE** | Routed top-k experts and 1+ shared experts feed back in parallel — different computation graph from vanilla top-k. DeepSeek MoE (V3/V3.2/V4), Hunyuan-A13B. |
+| **MLA (Multi-head Latent Attention)** | 3+ branch fan-out (`c_Q`, `c_KV`, `k_rope_pre`), sub-dim RoPE injection, KV-cache compression. Verified models: DeepSeek V3, V3.2-Exp, R1. |
+| **Shared + routed parallel MoE** | Routed top-k experts and 1+ shared experts feed back in parallel — different computation graph from vanilla top-k. Verified models: DeepSeek V3, V3.2-Exp, R1; Hunyuan-A13B. |
 | **Cross-modal fusion (VLM)** | How vision tokens enter the LLM (early fusion / late fusion / cross-attention) is the entire structural identity of a VLM. Qwen3-VL, Kimi-VL. |
 | **Hybrid attention** | Multiple parallel attention paths in one block (e.g. linear + softmax, attn + state-space). MiniMax-style hybrids if/when present, Jamba-style hybrids. |
-| **MTP / multi-token prediction heads** | Distinct head-side computation graph alongside the main LMHead. DeepSeek V3/V4 trained with MTP. |
+| **MTP / multi-token prediction heads** | Distinct head-side computation graph alongside the main LMHead. Verified models: DeepSeek V3 (paper specifies MTP for training). |
 | **Non-trivial router** | Auxiliary-loss-free balancing, expert-choice routing, or any router that changes the per-token compute path. DeepSeek-MoE V3-style balancing. (Standard top-k token-choice does NOT trip this.) |
 
 ### Never earn a detail diagram
@@ -81,7 +81,7 @@ This skill targets text-graph-friendly architectures. Diffusion / video / 3D mod
 
 | Scope | Families |
 |---|---|
-| **In-scope** | DeepSeek V3 / V3.2 / V4, GLM-5, Qwen3 (dense + MoE) / Qwen3.5, Kimi K2 / K2.5, MiniMax M2 / M2.5, Step 3.5 Flash, Hunyuan-A13B, Llama 4 (dense + MoE), Qwen3-VL, Kimi-VL |
+| **In-scope** | DeepSeek V3 / V3.2-Exp / R1, GLM-5, Qwen3 (dense + MoE) / Qwen3.5, Kimi K2 / K2.5, MiniMax M2 / M2.5, Step 3.5 Flash, Hunyuan-A13B, Llama 4 (dense + MoE), Qwen3-VL, Kimi-VL |
 | **Out-of-scope** | Z-Image, Wan2.1, Wan2.2, HunyuanVideo, Hunyuan3D-2, FLUX.1 |
 
 When a new in-scope model lands, the author follows the playbook below; no additional approval needed unless the model uses a module not yet in section 3 (in which case extend section 3 first, then author).
@@ -153,7 +153,7 @@ When a module behaves as more than one of these (rare), pick the *dominant* comp
 ## 5. Authoring playbook (per new model)
 
 1. **Identify modules used.** Read `config.json` and skim `modeling_*.py` (`<Model>DecoderLayer.forward`, attention class, FFN/MoE class, any head module).
-2. **Look up each module in section 3.** For each "auto-earn" module hit, check whether the matching **structural module file** already exists in `references/diagrams/` (`mla.md`, `moe-shared-routed.md`, …). If it does, reuse it via cross-link — do **not** create a per-model copy. If a structurally distinct variant is required, create a new module file with a structure-based id (e.g. `mla-v4-variant.md`), not a model-prefixed id.
+2. **Look up each module in section 3.** For each "auto-earn" module hit, check whether the matching **structural module file** already exists in `references/diagrams/` (`mla.md`, `moe-shared-routed.md`, …). If it does, reuse it via cross-link — do **not** create a per-model copy. If a structurally distinct variant is required, create a new module file with a structure-based id describing the distinction (e.g. `mla-<distinction>.md` where `<distinction>` names what differs structurally), never a model version like `mla-v4.md`.
 3. **Pick the model's three model-level tags** — `modality`, `attention_type`, `ffn_type` — from section 4a's closed vocabularies. Each axis is independent; do not encode them into a single combined tag.
 4. **Write the model's block-level `.md` file** per `mermaid-style-guide.md`'s file-structure rule (frontmatter, top heading, Model summary, Mermaid, Modules table with Detail column, Key parameters with **concrete values**, Notes, Source basis).
 5. **In `## Modules`**, every row carries a closed-vocabulary `type` tag from section 4a; the `Count` column is the number of times the module is instantiated in the full forward pass (1 for one-shot modules at model boundaries, `n_layers` for per-block modules); the `Detail` column carries a `[[module-id]]` link for modules whose `type` has an auto-earn structural diagram (currently `mla`, `moe-shared-routed`) and `—` otherwise. When a position alternates between two implementations (e.g. dense FFN for layers 1–3 + MoE FFN for the rest), list both as separate rows and note the position-to-layer mapping below the table.

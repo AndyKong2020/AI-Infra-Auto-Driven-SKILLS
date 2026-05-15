@@ -16,7 +16,7 @@ source_basis:
 
 # Multi-head Latent Attention (MLA) — structural pattern
 
-> Model-agnostic structural diagram. Used by every model whose `attention_type=mla` (DeepSeek V3, V3.2, V4, and any structurally identical successor). Numerical shapes live in each model's own `## Key parameters` table — they are not baked into this diagram.
+> Model-agnostic structural diagram. Verified to apply to: DeepSeek V3, DeepSeek V3.2-Exp, DeepSeek R1 (R1 reuses V3's architecture). Any future model with `attention_type=mla` reuses this file rather than forking, provided its topology matches; structurally distinct variants get a new module file with a structure-based id (e.g. `mla-<distinction>.md`), never a model-prefixed one. Numerical shapes live in each model's own `## Key parameters` table — they are not baked into this diagram.
 
 ```mermaid
 flowchart TD
