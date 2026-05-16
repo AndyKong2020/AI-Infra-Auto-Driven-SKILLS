@@ -14,6 +14,7 @@ source_basis:
     - deepseek-v3-architecture
     - deepseek-v3-2-exp-architecture
     - deepseek-v4-architecture
+    - gemma-4-26b-a4b-it-architecture
     - glm-5-architecture
     - hunyuan-a13b-architecture
     - kimi-k2-architecture
@@ -26,7 +27,7 @@ source_basis:
 
 # Shared + Routed MoE FFN — structural pattern
 
-> Model-agnostic structural diagram. Verified to apply to: DeepSeek V3, DeepSeek R1, DeepSeek V3.2-Exp, DeepSeek V4 (Pro + Flash), GLM-5, Hunyuan-A13B-Instruct, Kimi K2 (reuses `DeepseekV3ForCausalLM` with `model_type=kimi_k2`), Kimi K2.5 (text backbone reuses `DeepseekV3ForCausalLM` inside the `KimiK25ForConditionalGeneration` wrapper), Kimi-VL-A3B-Instruct (text backbone), Llama 4 Scout, Qwen3.5 MoE, Step 3.5 Flash (MoE layers 3–44). Any future model with `ffn_type=moe-shared+routed` reuses this file provided the topology matches; per-model variation (e.g. router balancing strategy, router activation function) goes in the model's own Notes. Per-model numerical values (top-k, n_routed, n_shared, per-expert intermediate dim) live in each model's own `## Key parameters` table.
+> Model-agnostic structural diagram. Verified to apply to: DeepSeek V3, DeepSeek R1, DeepSeek V3.2-Exp, DeepSeek V4 (Pro + Flash), Gemma 4 26B-A4B-it (dense MLP serves as the always-on "shared" path, sumed in parallel with the routed branch when `enable_moe_block=true`), GLM-5, Hunyuan-A13B-Instruct, Kimi K2 (reuses `DeepseekV3ForCausalLM` with `model_type=kimi_k2`), Kimi K2.5 (text backbone reuses `DeepseekV3ForCausalLM` inside the `KimiK25ForConditionalGeneration` wrapper), Kimi-VL-A3B-Instruct (text backbone), Llama 4 Scout, Qwen3.5 MoE, Step 3.5 Flash (MoE layers 3–44). Any future model with `ffn_type=moe-shared+routed` reuses this file provided the topology matches; per-model variation (e.g. router balancing strategy, router activation function) goes in the model's own Notes. Per-model numerical values (top-k, n_routed, n_shared, per-expert intermediate dim) live in each model's own `## Key parameters` table.
 
 ```mermaid
 flowchart TD
@@ -62,6 +63,7 @@ Per-token active expert count is `top_k + n_shared_experts`, not `n_routed_exper
 - **Per-model variation** is in how the router is trained / balanced and which gating nonlinearity it uses, not in this diagram:
   - DeepSeek V3 / R1 / V3.2-Exp: `scoring_func=sigmoid` with auxiliary-loss-free load balancing (`topk_method=noaux_tc`, bias-only adjustment per expert).
   - DeepSeek V4: `sqrtsoftplus` gating activation with auxiliary-loss-free balancing; first 3 MoE layers use hash-based routing instead of learned router.
+  - Gemma 4 26B-A4B-it: **softmax** gating (not sigmoid) with top-k renorm + learned per-expert scale (`per_expert_scale`); shared path is the wider dense MLP (`intermediate_size=2112`) while routed experts are narrower (`moe_intermediate_size=704`), and the shared / routed branches use *separate* pre/post-feedforward RMSNorms (not the shared norm of the canonical pattern). No auxiliary-loss balancing exposed in config.
   - GLM-5: sigmoid gating with auxiliary-loss-free balancing (`topk_method=noaux_tc`).
   - Kimi K2 / K2.5: auxiliary-loss-free load balancing (`topk_method=noaux_tc`, `scoring_func=sigmoid`), same family as DeepSeek V3.
   - Hunyuan-A13B: standard auxiliary-loss balancing (per the tech report; the HF config does not expose `scoring_func` or `router_aux_loss_coef`, so the gating activation specifics are paper-based, not config-based).
