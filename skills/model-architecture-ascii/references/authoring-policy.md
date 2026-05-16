@@ -118,8 +118,11 @@ The matrix below is the operational rule. When authoring a new model, list the m
 | 16 | Llama 4 | MoE shared expert | ✅ authored — `llama-4-scout-architecture` (text+vision, GQA + NoPE-every-4th, MoE 16 routed + 1 shared top-1 sigmoid) reuses `[[moe-shared-routed]]`. Maverick / Behemoth siblings tracked in Notes |
 | 17 | Hunyuan-A13B | architecture, shared-routed | ✅ authored — `hunyuan-a13b-architecture` + shared `moe-shared-routed.md` |
 | 18 | Kimi-VL | architecture, training-flow | ✅ authored — `kimi-vl-a3b-architecture` reuses shared `mla.md` + `moe-shared-routed.md`; fusion is an MLP projector (no DeepStack), described inline in Notes (too trivial for its own module file) |
+| 19* | Gemma 4 | *(none yet)* | ✅ authored as pre-add — `gemma-4-26b-a4b-it-architecture` (MoE-VLM, `26BA4B`) reuses `[[moe-shared-routed]]` (dense MLP serves as the always-on "shared" path summed with the routed branch when `enable_moe_block=true`); `gemma-4-31b-it-architecture` (dense VLM, `31B`). Both share `Gemma4ForConditionalGeneration` / `model_type=gemma4`, layer_types interleaving sliding+full attention with `attention_k_eq_v` on full layers, and a `Gemma4MultimodalEmbedder` (RMSNorm + single Linear) fusion. Pre-added ahead of sibling `model-architecture-diagram` skill, which does not yet index a Gemma 4 architecture image; family-scope rule § 4 to be reconciled when the sibling adds an entry |
 
 **Out-of-scope (sibling has, this skill does not):** Z-Image, Wan2.1, Wan2.2, HunyuanVideo, Hunyuan3D-2, FLUX.1 — diffusion / video / 3D.
+
+`*` indicates a row pre-added ahead of sibling-skill coverage (family-scope rule § 4 is normally pinned to sibling; pre-adds are explicit exceptions).
 
 Status legend: ✅ authored, ⏳ todo, ⚠️ gap / verify required. Gap entries must be either authored once verification is possible or kept as documented gaps; they cannot be aliased onto another model's file (cf. the V3.2-on-V3 incident).
 
