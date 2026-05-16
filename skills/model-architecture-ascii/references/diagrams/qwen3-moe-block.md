@@ -87,7 +87,7 @@ Values shown are for **Qwen3-235B-A22B**; the smaller `Qwen3-30B-A3B` MoE shares
 
 ## Notes
 
-- **No shared expert.** This is the key MoE-flavor difference vs DeepSeek-V3.2 (see [[deepseek-v3.2-architecture]]), which keeps 1 shared expert always-on plus the top-k routed ones.
+- **No shared expert.** This is the key MoE-flavor difference vs DeepSeek-V3.2 (see [[deepseek-v3-2-exp-architecture]]), which keeps 1 shared expert always-on plus the top-k routed ones.
 - Attention is plain **GQA** (grouped-query), not MLA — KV is cached at full per-(kv-)head granularity. Memory characteristics differ substantially from the MLA family.
 - Activated parameters per token ≈ 22B for the 235B variant: top-8 of 128 routed experts on each MoE layer, plus shared (non-MoE) attention / norm / embed weights.
 - Numerical fields above are representative of the 235B-A22B variant. For other Qwen3 MoE sizes, the topology is identical; consult the corresponding HF config.

@@ -60,11 +60,11 @@ Per-token active expert count is `top_k + n_shared_experts`, not `n_routed_exper
 - **Two parallel paths from the same RMSNorm-ed input**: the router produces top-k indices + softmax-normalized gates that select-and-weight `top_k` of the `n_routed_experts`; the shared expert(s) see the same input directly. Both feed into a final sum.
 - **Why a shared expert exists**: it amortizes always-needed features across all tokens (rather than routing every token through them) and acts as a stable backbone, leaving routed experts to specialize. This makes the FFN behave more like a dense backbone + sparse correction than a pure top-k MoE — a key kernel-planning consequence: the shared path can be fused like a normal FFN, while only the routed branch needs MoE dispatch.
 - **Per-model variation** is in how the router is trained / balanced and which gating nonlinearity it uses, not in this diagram:
-  - DeepSeek V3 / R1 / V3.2-Exp: softmax gating with auxiliary-loss-free load balancing (`topk_method=noaux_tc`, bias-only adjustment per expert).
+  - DeepSeek V3 / R1 / V3.2-Exp: `scoring_func=sigmoid` with auxiliary-loss-free load balancing (`topk_method=noaux_tc`, bias-only adjustment per expert).
   - DeepSeek V4: `sqrtsoftplus` gating activation with auxiliary-loss-free balancing; first 3 MoE layers use hash-based routing instead of learned router.
   - GLM-5: sigmoid gating with auxiliary-loss-free balancing (`topk_method=noaux_tc`).
   - Kimi K2 / K2.5: auxiliary-loss-free load balancing (`topk_method=noaux_tc`, `scoring_func=sigmoid`), same family as DeepSeek V3.
-  - Hunyuan-A13B: softmax gating with standard auxiliary-loss balancing.
+  - Hunyuan-A13B: standard auxiliary-loss balancing (per the tech report; the HF config does not expose `scoring_func` or `router_aux_loss_coef`, so the gating activation specifics are paper-based, not config-based).
   - Llama 4 (Scout / Maverick): sigmoid gating (per-expert independent gate, not softmax-normalised) with `top_k=1`; standard `router_aux_loss_coef`.
   - Qwen3.5 MoE: sigmoid gating; aux-loss-free balancing.
   - Step 3.5 Flash: sigmoid (not softmax) router activation with `moe_router_scaling_factor=3.0`, learned per-expert router bias (`use_moe_router_bias=true`), fp32 gate computation.
